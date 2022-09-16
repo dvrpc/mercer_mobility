@@ -16,6 +16,17 @@ def import_and_clip(sql_query = str, geom_col =str, sql_tablename_output = str):
     clipped = gpd.clip(gdf, mask_layer)
     db.import_geodataframe(clipped, sql_tablename_output, explode=True)
 
+#import model volume data (u drive)
+
+#import job access data (sarah's email)
+
+#bridges (G)
+
+#adt data (G)
+
+#pavement condition (G)
+
+#safety voyager (G)
 
 if __name__ == "__main__":
     import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
