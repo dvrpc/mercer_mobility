@@ -1,6 +1,5 @@
 # you might need to pip install pg_data_etl , i'm not sure that it made it into the .env file. 
 # note to use my forked file, not Aaron's original (unless he updates with my forked change which corrects shape issue)
-from xml.parsers.expat import model
 from pg_data_etl import Database
 import glob
 import geopandas as gpd
