@@ -56,6 +56,17 @@ def import_adt():
     print("adt imported successfully")
 
 #pavement condition (G)
+def import_pavement_conditions():
+    pci = data_folder / 'Pavement Condition' / 'Pavement Condition Index' 
+    print(pci)
+    for shapefile in glob.iglob(f'{pci}/*.shp'):
+        file = Path(shapefile)
+        print(f"processing {file.stem}, please wait...")
+        gdf = gpd.read_file(shapefile)
+        gdf = gdf.to_crs(26918)
+        clipped = gpd.clip(gdf, mask_layer)
+        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
+    print("pavement condition shapefile imported successfully")
 
 #safety voyager (G)
 def import_safety_voyager():
@@ -72,12 +83,13 @@ def import_safety_voyager():
     print("safety voyager imported successfully")
 
 if __name__ == "__main__":
-    import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
-    import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
-    import_and_clip("select * from transportation.njtransit_transitstops", "shape", "transit_stops_clipped")
-    import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
-    import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
-    import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
-    import_model_volumes()
-    import_adt()
-    import_safety_voyager()
+    # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
+    # import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
+    # import_and_clip("select * from transportation.njtransit_transitstops", "shape", "transit_stops_clipped")
+    # import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
+    # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
+    # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
+    # import_model_volumes()
+    # import_adt()
+    # import_safety_voyager()
+    import_pavement_conditions()
