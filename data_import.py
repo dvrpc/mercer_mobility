@@ -93,16 +93,16 @@ def import_safety_voyager():
 
     #traveltimes (G)
 def import_travel_times():
-    pci = data_folder / 'Pavement Condition' / 'Pavement Condition Index' 
-    print(pci)
-    for shapefile in glob.iglob(f'{pci}/*.shp'):
+    tt = data_folder / 'TravelTimes'
+    print(tt)
+    for shapefile in glob.iglob(f'{tt}/*.shp'):
         file = Path(shapefile)
         print(f"processing {file.stem}, please wait...")
         gdf = gpd.read_file(shapefile)
         gdf = gdf.to_crs(26918)
         clipped = gpd.clip(gdf, mask_layer)
         db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
-    print("pavement condition shapefile imported successfully")
+    print("travel time shapefile imported successfully")
 
 def import_mercer_roads():
     roads = data_folder / 'MercerCountyRoads'
@@ -130,4 +130,5 @@ if __name__ == "__main__":
     # import_pavement_conditions()
     # import_jobs()
     # import_mercer_roads()
-    pass
+    import_travel_times()
+    # pass
