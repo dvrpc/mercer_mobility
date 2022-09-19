@@ -40,6 +40,15 @@ def import_model_volumes():
     print("model volumes imported successfully")
 
 #import job access data (sarah's email)
+def import_jobs():
+    jobs = data_folder / 'JobAccess'
+    for shapefile in glob.iglob(f'{jobs}/*.shp'):
+        file = Path(shapefile)
+        print(f"importing {file.stem}, please wait...")
+        gdf = gpd.read_file(shapefile, mask=mask_layer)
+        gdf = gdf.to_crs(26918)
+        db.import_geodataframe(gdf, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
+    print("job access imported successfully")
 
 #bridges (G)
 
@@ -92,4 +101,5 @@ if __name__ == "__main__":
     # import_model_volumes()
     # import_adt()
     # import_safety_voyager()
-    import_pavement_conditions()
+    # import_pavement_conditions()
+    import_jobs()
