@@ -2,10 +2,12 @@
 # note to use my forked file, not Aaron's original (unless he updates with my forked change which corrects shape issue)
 from pg_data_etl import Database
 import glob
+import pandas as pd
 import geopandas as gpd
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from shapely.geometry import Point
 load_dotenv()
 
 db = Database.from_config("mercer", "localhost")
@@ -55,6 +57,20 @@ def import_adt():
 #pavement condition (G)
 
 #safety voyager (G)
+def import_safety_voyager():
+    sv = data_folder / 'Safety Voyager'
+    for folder in glob.iglob(f'{sv}/*'): 
+        path = Path(folder)
+        for csv in glob.iglob (f'{path}/*.csv'):
+            print(path.stem)
+            df = pd.read_csv(csv)
+            geometry = [Point(xy) for xy in zip(df.Longitude, df.Latitude)]
+            df = df.drop(['Longitude','Latitude'], axis=1)
+            gdf = gpd.GeoDataFrame(df, geometry=geometry, crs = 26918)
+            gdf_types = list(gdf.geometry.geom_type.unique())
+            print(gdf_types)
+            db.import_geodataframe(gdf, "sv_" + str(path.stem).lower(), explode=True)
+    print("safety voyager imported successfully")
 
 if __name__ == "__main__":
     # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
@@ -64,4 +80,5 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
     # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
     # import_model_volumes()
-    import_adt()
+    # import_adt()
+    import_safety_voyager()
