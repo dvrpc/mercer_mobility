@@ -41,6 +41,16 @@ def import_model_volumes():
 #bridges (G)
 
 #adt data (G)
+def import_adt():
+    adt = data_folder / 'NJDOT2021_ADT'
+    for shapefile in glob.iglob(f'{adt}/*.shp'):
+        file = Path(shapefile)
+        print(f"processing {file.stem}, please wait...")
+        gdf = gpd.read_file(shapefile)
+        gdf = gdf.to_crs(26918)
+        clipped = gpd.clip(gdf, mask_layer)
+        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True)
+    print("adt imported successfully")
 
 #pavement condition (G)
 
@@ -54,4 +64,4 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
     # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
     # import_model_volumes()
-    pass
+    import_adt()
