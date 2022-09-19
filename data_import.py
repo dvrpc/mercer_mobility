@@ -63,7 +63,7 @@ def import_safety_voyager():
     for folder in glob.iglob(f'{sv}/*'): 
         path = Path(folder)
         for csv in glob.iglob (f'{path}/*.csv'):
-            print(path.stem)
+            print(f"processing {path.stem} safety voyager data...")
             df = pd.read_csv(csv)
             geometry = [Point(xy) for xy in zip(df.Longitude, df.Latitude)]
             df = df.drop(['Longitude','Latitude'], axis=1)
