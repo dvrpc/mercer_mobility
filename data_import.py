@@ -23,7 +23,8 @@ def import_and_clip(sql_query = str, geom_col =str, sql_tablename_output = str):
     gdf = gis_db.gdf(sql_query, geom_col)
     gdf = gdf.to_crs(26918)
     clipped = gpd.clip(gdf, mask_layer)
-    db.import_geodataframe(clipped, sql_tablename_output, explode=True)
+    db.import_geodataframe(clipped, sql_tablename_output, explode=True, gpd_kwargs={'if_exists':'replace'})
+    print(f"importing {sql_tablename_output}, please wait...")
 
 
 #import model volume data (g drive)
@@ -35,7 +36,7 @@ def import_model_volumes():
         gdf = gpd.read_file(shapefile)
         gdf = gdf.to_crs(26918)
         clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(clipped, "model_vol_" + str(file.stem).lower(), explode=True)
+        db.import_geodataframe(clipped, "model_vol_" + str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("model volumes imported successfully")
 
 #import job access data (sarah's email)
@@ -47,11 +48,11 @@ def import_adt():
     adt = data_folder / 'NJDOT2021_ADT'
     for shapefile in glob.iglob(f'{adt}/*.shp'):
         file = Path(shapefile)
-        print(f"processing {file.stem}, please wait...")
+        print(f"importing {file.stem}, please wait...")
         gdf = gpd.read_file(shapefile)
         gdf = gdf.to_crs(26918)
         clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True)
+        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("adt imported successfully")
 
 #pavement condition (G)
@@ -67,18 +68,16 @@ def import_safety_voyager():
             geometry = [Point(xy) for xy in zip(df.Longitude, df.Latitude)]
             df = df.drop(['Longitude','Latitude'], axis=1)
             gdf = gpd.GeoDataFrame(df, geometry=geometry, crs = 26918)
-            gdf_types = list(gdf.geometry.geom_type.unique())
-            print(gdf_types)
-            db.import_geodataframe(gdf, "sv_" + str(path.stem).lower(), explode=True)
+            db.import_geodataframe(gdf, "sv_" + str(path.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("safety voyager imported successfully")
 
 if __name__ == "__main__":
-    # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
-    # import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
-    # import_and_clip("select * from transportation.njtransit_transitstops", "shape", "transit_stops_clipped")
-    # import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
-    # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
-    # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
-    # import_model_volumes()
-    # import_adt()
+    import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
+    import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
+    import_and_clip("select * from transportation.njtransit_transitstops", "shape", "transit_stops_clipped")
+    import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
+    import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
+    import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
+    import_model_volumes()
+    import_adt()
     import_safety_voyager()
