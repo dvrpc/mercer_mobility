@@ -91,6 +91,31 @@ def import_safety_voyager():
             db.import_geodataframe(gdf, "sv_" + str(path.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("safety voyager imported successfully")
 
+    #traveltimes (G)
+def import_travel_times():
+    pci = data_folder / 'Pavement Condition' / 'Pavement Condition Index' 
+    print(pci)
+    for shapefile in glob.iglob(f'{pci}/*.shp'):
+        file = Path(shapefile)
+        print(f"processing {file.stem}, please wait...")
+        gdf = gpd.read_file(shapefile)
+        gdf = gdf.to_crs(26918)
+        clipped = gpd.clip(gdf, mask_layer)
+        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
+    print("pavement condition shapefile imported successfully")
+
+def import_mercer_roads():
+    roads = data_folder / 'MercerCountyRoads'
+    print(roads)
+    for shapefile in glob.iglob(f'{roads}/*.shp'):
+        file = Path(shapefile)
+        print(f"processing {file.stem}, please wait...")
+        gdf = gpd.read_file(shapefile)
+        gdf = gdf.to_crs(26918)
+        clipped = gpd.clip(gdf, mask_layer)
+        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
+    print("mercer jurisdiction roads shapefile imported successfully")
+
 if __name__ == "__main__":
     # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
     # import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
@@ -98,8 +123,11 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
     # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
     # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
+    # import_and_clip("select * from demographics.ipd_2020", "shape", "ipd_2020_clipped")
     # import_model_volumes()
     # import_adt()
     # import_safety_voyager()
     # import_pavement_conditions()
-    import_jobs()
+    # import_jobs()
+    # import_mercer_roads()
+    pass
