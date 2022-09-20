@@ -80,6 +80,7 @@ def import_pavement_conditions():
 #safety voyager (G)
 def import_safety_voyager():
     sv = data_folder / 'Safety Voyager'
+    gdf_list = []
     for folder in glob.iglob(f'{sv}/*'): 
         path = Path(folder)
         for csv in glob.iglob (f'{path}/*.csv'):
@@ -87,8 +88,11 @@ def import_safety_voyager():
             df = pd.read_csv(csv)
             geometry = [Point(xy) for xy in zip(df.Longitude, df.Latitude)]
             df = df.drop(['Longitude','Latitude'], axis=1)
-            gdf = gpd.GeoDataFrame(df, geometry=geometry, crs = 26918)
-            db.import_geodataframe(gdf, "sv_" + str(path.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
+            temp_gdf = gpd.GeoDataFrame(df, geometry=geometry, crs = 26918)
+            gdf_list.append(temp_gdf)
+    print("combining safety voyager datasets...")
+    gdf = gpd.GeoDataFrame( pd.concat( gdf_list, ignore_index=True) )
+    db.import_geodataframe(gdf, "safety_voyager", explode=True, gpd_kwargs={'if_exists':'replace'})
     print("safety voyager imported successfully")
 
     #traveltimes (G)
@@ -124,10 +128,10 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
     # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
     # import_and_clip("select * from demographics.ipd_2020", "shape", "ipd_2020_clipped")
-    import_and_clip("select * from transportation.pedestriannetwork_points where status = 'MISSING'", "shape", "missing_curb_ramps")
+    # import_and_clip("select * from transportation.pedestriannetwork_points where status = 'MISSING'", "shape", "missing_curb_ramps")
     # import_model_volumes()
     # import_adt()
-    # import_safety_voyager()
+    import_safety_voyager()
     # import_pavement_conditions()
     # import_jobs()
     # import_mercer_roads()
