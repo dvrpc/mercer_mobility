@@ -124,11 +124,12 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
     # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
     # import_and_clip("select * from demographics.ipd_2020", "shape", "ipd_2020_clipped")
+    import_and_clip("select * from transportation.pedestriannetwork_points where status = 'MISSING'", "shape", "missing_curb_ramps")
     # import_model_volumes()
     # import_adt()
     # import_safety_voyager()
     # import_pavement_conditions()
     # import_jobs()
     # import_mercer_roads()
-    import_travel_times()
+    # import_travel_times()
     # pass
