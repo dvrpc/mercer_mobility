@@ -1,0 +1,10 @@
+name: mercer
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - geopandas
+  - sqlalchemy
+  - psycopg2
+  - geoalchemy2
+prefix: /home/mmorley0395/miniconda3/envs/mercer
