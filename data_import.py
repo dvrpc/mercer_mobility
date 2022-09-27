@@ -120,19 +120,43 @@ def import_mercer_roads():
         db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("mercer jurisdiction roads shapefile imported successfully")
 
+def import_bridges():
+    #imports bridges, but needs to be further joined with excel sheet for county bridges
+    bridges = data_folder / 'Bridges'
+    print(bridges)
+    for shapefile in glob.iglob(f'{bridges}/*.shp'):
+        file = Path(shapefile)
+        print(f"processing {file.stem}, please wait...")
+        gdf = gpd.read_file(shapefile)
+        gdf = gdf.to_crs(26918)
+        clipped = gpd.clip(gdf, mask_layer)
+        db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
+    print("bridges shapefile imported successfully")
+
+
+def join_bridges():
+    suff_rating = data_folder / 'Bridges' / 'sufficient ratings.xlsx'
+    df = pd.read_excel(suff_rating,sheet_name='Sheet1')
+    return df
+
 if __name__ == "__main__":
-    import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
-    import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
-    import_and_clip("select * from transportation.njtransit_transitstops", "shape", "transit_stops_clipped")
-    import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
-    import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
-    import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
-    import_and_clip("select * from demographics.ipd_2020", "shape", "ipd_2020_clipped")
-    import_and_clip("select * from transportation.pedestriannetwork_points where status = 'MISSING'", "shape", "missing_curb_ramps")
-    import_model_volumes()
-    import_adt()
-    import_safety_voyager()
-    import_pavement_conditions()
-    import_jobs()
-    import_mercer_roads()
-    import_travel_times()
+    # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
+    # import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
+    # import_and_clip("select * from transportation.njtransit_transitstops", "shape", "transit_stops_clipped")
+    # import_and_clip("select * from transportation.cmp2019_inrix_traveltimedata", "shape", "inrix_2019_clipped")
+    # import_and_clip("select * from transportation.cmp2019_nj_crashfrequencyseverity", "shape", "cmp_crashfreqseverity_2019_clipped")
+    # import_and_clip("select * from transportation.cmp2019_focus_intersection_bottlenecks", "shape", "cmp_focus_bottleneck_2019_clipped")
+    # import_and_clip("select * from demographics.ipd_2020", "shape", "ipd_2020_clipped")
+    # import_and_clip("select * from transportation.pedestriannetwork_points where status = 'MISSING'", "shape", "missing_curb_ramps")
+    # import_and_clip("select * from transportation.pedestriannetwork_lines", "shape", "ped_network")
+    # import_and_clip("select * from transportation.circuittrails", "shape", "circuit_trails")
+    import_and_clip("select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails", "shape", "all_trails")
+    # import_model_volumes()
+    # import_adt()
+    # import_safety_voyager()
+    # import_pavement_conditions()
+    # import_jobs()
+    # import_mercer_roads()
+    # import_travel_times()
+    # import_bridges()
+    # join_bridges()
