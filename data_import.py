@@ -121,7 +121,7 @@ def import_mercer_roads():
     print("mercer jurisdiction roads shapefile imported successfully")
 
 def import_bridges():
-    #imports bridges, but needs to be further joined with excel sheet for county bridges
+    #imports spatial bridge data from NJDOT shapefile
     bridges = data_folder / 'Bridges'
     print(bridges)
     for shapefile in glob.iglob(f'{bridges}/*.shp'):
@@ -132,13 +132,19 @@ def import_bridges():
         clipped = gpd.clip(gdf, mask_layer)
         db.import_geodataframe(clipped, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("bridges shapefile imported successfully")
-
-
-def join_bridges():
     suff_rating = data_folder / 'Bridges' / 'sufficient ratings.xlsx'
     df = pd.read_excel(suff_rating,sheet_name='Sheet1')
-    return df
-
+    df['Asset Name']= df['Asset Name'].str.split("\s+\(").str[0]
+    db.import_dataframe(df, "bridges_excel", df_import_kwargs={'if_exists':'replace'})
+    print("bridge excel file imported successfully")
+    query = """select nb.*, be.parent_asset, be.asset_name, be.unofficial_sufficiency_rating from njdot_bridges_2019 nb 
+            inner join bridges_excel be 
+            on be.asset_name = nb.structure_ 
+            where "owner" = 'MERCER COUNTY' """
+    db.gis_make_geotable_from_query(query, "bridges_joined", "Point", 26918)
+    dropquery = """drop table if exists bridges_excel, njdot_bridges_2019"""
+    db.execute(dropquery)
+    
 if __name__ == "__main__":
     # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
     # import_and_clip("select * from transportation.pedestriannetwork_gaps", "shape", "sidewalk_gaps_clipped")
@@ -150,7 +156,9 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.pedestriannetwork_points where status = 'MISSING'", "shape", "missing_curb_ramps")
     # import_and_clip("select * from transportation.pedestriannetwork_lines", "shape", "ped_network")
     # import_and_clip("select * from transportation.circuittrails", "shape", "circuit_trails")
-    import_and_clip("select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails", "shape", "all_trails")
+    # import_and_clip("select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails", "shape", "all_trails")
+    # import_and_clip("select objectid, lu15cat, lu15catn, lu15sub, lufmcat, lufmcatn, acres, state_name, co_name, mun_name, geoid, lu15dev, mixeduse, lu15subn, ST_Force2D(shape) as shape from planning.dvrpc_landuse_2015", "shape", "lu2015")
+    # import_and_clip("select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails", "shape", "all_trails")
     # import_model_volumes()
     # import_adt()
     # import_safety_voyager()
@@ -158,5 +166,4 @@ if __name__ == "__main__":
     # import_jobs()
     # import_mercer_roads()
     # import_travel_times()
-    # import_bridges()
-    # join_bridges()
+    import_bridges()
