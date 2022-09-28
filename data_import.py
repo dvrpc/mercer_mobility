@@ -19,11 +19,11 @@ mask_layer = gis_db.gdf("select * from boundaries.countyboundaries where co_name
 mask_layer = mask_layer.to_crs(26918)
 
 
-def import_and_clip(sql_query = str, geom_col =str, sql_tablename_output = str):
+def import_and_clip(sql_query = str, geom_col =str, sql_tablename_output = str, gpd_kwargs = {'if_exists':'replace'}):
     gdf = gis_db.gdf(sql_query, geom_col)
     gdf = gdf.to_crs(26918)
     clipped = gpd.clip(gdf, mask_layer)
-    db.import_geodataframe(clipped, sql_tablename_output, explode=True, gpd_kwargs={'if_exists':'replace'})
+    db.import_geodataframe(clipped, sql_tablename_output, explode=True, gpd_kwargs = gpd_kwargs )
     print(f"importing {sql_tablename_output}, please wait...")
 
 
@@ -49,8 +49,6 @@ def import_jobs():
         gdf = gdf.to_crs(26918)
         db.import_geodataframe(gdf, str(file.stem).lower(), explode=True, gpd_kwargs={'if_exists':'replace'})
     print("job access imported successfully")
-
-#bridges (G)
 
 #adt data (G)
 def import_adt():
@@ -88,10 +86,11 @@ def import_safety_voyager():
             df = pd.read_csv(csv)
             geometry = [Point(xy) for xy in zip(df.Longitude, df.Latitude)]
             df = df.drop(['Longitude','Latitude'], axis=1)
-            temp_gdf = gpd.GeoDataFrame(df, geometry=geometry, crs = 26918)
+            temp_gdf = gpd.GeoDataFrame(df, geometry=geometry, crs = 4326)
             gdf_list.append(temp_gdf)
     print("combining safety voyager datasets...")
     gdf = gpd.GeoDataFrame( pd.concat( gdf_list, ignore_index=True) )
+    gdf.to_crs(26918)
     db.import_geodataframe(gdf, "safety_voyager", explode=True, gpd_kwargs={'if_exists':'replace'})
     print("safety voyager imported successfully")
 
@@ -157,13 +156,13 @@ if __name__ == "__main__":
     # import_and_clip("select * from transportation.pedestriannetwork_lines", "shape", "ped_network")
     # import_and_clip("select * from transportation.circuittrails", "shape", "circuit_trails")
     # import_and_clip("select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails", "shape", "all_trails")
-    # import_and_clip("select objectid, lu15cat, lu15catn, lu15sub, lufmcat, lufmcatn, acres, state_name, co_name, mun_name, geoid, lu15dev, mixeduse, lu15subn, ST_Force2D(shape) as shape from planning.dvrpc_landuse_2015", "shape", "lu2015")
+    # import_and_clip("select objectid, lu15cat, lu15catn, lu15sub, lufmcat, lufmcatn, acres, state_name, co_name, mun_name, geoid, lu15dev, mixeduse, lu15subn, ST_Force2D(shape) as shape from planning.dvrpc_landuse_2015", "shape", "lu2015", gpd_kwargs={'if_exists':'replace', 'dtype': 'POLYGON' }) # mm note; this didn't work
     # import_and_clip("select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails", "shape", "all_trails")
     # import_model_volumes()
     # import_adt()
-    # import_safety_voyager()
+    import_safety_voyager()
     # import_pavement_conditions()
     # import_jobs()
     # import_mercer_roads()
     # import_travel_times()
-    import_bridges()
+    # import_bridges()
