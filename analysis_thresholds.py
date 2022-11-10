@@ -1,6 +1,6 @@
 from pg_data_etl import Database
 
-db = Database.from_config("mercer", "localhost")
+db = Database.from_config("mercer", "omad")
 
 
 def create_threshold_view(
@@ -76,5 +76,6 @@ if __name__ == "__main__":
             "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
             f"ptiwkd{timeperiod}",
             ">=",
-            3,
+            2,
+            f"and ptiwkd{timeperiod} <= 3",
         )
