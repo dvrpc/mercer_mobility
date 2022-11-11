@@ -2,6 +2,8 @@ from pg_data_etl import Database
 
 db = Database.from_config("mercer", "omad")
 
+views = []
+
 
 def create_threshold_view(
     viewname: str,
@@ -19,10 +21,10 @@ def create_threshold_view(
                     {and_or_statement}
                     );"""
     )
+    views.append("view_" + viewname)
 
 
-if __name__ == "__main__":
-
+def set_thresholds():
     for val in [50, 80]:
         create_threshold_view(
             f"bridges{val}", "bridges_joined", "unofficial_sufficiency_rating", "<", val
@@ -79,3 +81,23 @@ if __name__ == "__main__":
             2,
             f"and ptiwkd{timeperiod} <= 3",
         )
+
+
+def clip_to_mercerroads(view, line_buffer: float):
+    db.execute(
+        f"""drop table if exists {view}_clipped;
+            create table {view}_clipped as(
+            with buffered as (
+                select st_buffer(geom, {line_buffer}) as geom from mercercountyjurisdictionroads_frommercer
+                )
+                select a.* from public.{view} a 
+                inner join buffered b 
+                on st_intersects(a.geom, b.geom)
+                )"""
+    )
+    print(f"creating clipped table for {view} view...")
+
+
+set_thresholds()
+for view in views:
+    clip_to_mercerroads(view, 15.24)  # 15.24 is meters, == 50'
