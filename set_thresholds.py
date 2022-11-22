@@ -34,13 +34,14 @@ def set_thresholds():
         create_threshold_view(f"pavement{val}", "pavement_evaluation", "pci", "<", val)
 
     for val in [85, 100]:
-        create_threshold_view(
-            f"vc{val}",
-            "model_vol_2025_am_link",
-            '"volcapra~2"::int',
-            ">",
-            val,
-        )
+        for period in ["model_vols2025_am_link", "model_vols2025_pm_link"]:
+            create_threshold_view(
+                f"{period[-7:-5]}_vc{val}",
+                f"{period}",
+                '"volcapra~2"::int',
+                ">",
+                val,
+            )
 
     create_threshold_view("sw_gaps", "sidewalk_gaps_clipped", "sw_ratio", "<", ".5")
 
