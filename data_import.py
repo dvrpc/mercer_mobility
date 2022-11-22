@@ -1,5 +1,3 @@
-# you might need to pip install pg_data_etl , i'm not sure that it made it into the .env file.
-# note to use my forked file, not Aaron's original (unless he updates with my forked change which corrects shape issue)
 from cmath import exp
 from pg_data_etl import Database
 import glob
@@ -40,15 +38,12 @@ def import_and_clip(
     print(f"importing {sql_tablename_output}, please wait...")
 
 
-# import model volume data (g drive)
 def import_shapefile(folder_string: str, output_string: str = "", clip: bool = True):
     folder = data_folder / folder_string
-    print(folder)
     for shapefile in glob.iglob(
         f"{folder}/*.[sS][hH][pP]"
     ):  # brackets deal with case differences between different folders (shp vs SHP)
         file = Path(shapefile)
-        print(file)
         print(f"processing {file.stem}, please wait...")
         gdf = gpd.read_file(shapefile)
         gdf = gdf.to_crs(26918)
@@ -70,7 +65,6 @@ def import_shapefile(folder_string: str, output_string: str = "", clip: bool = T
     print(f"{output_string} imported successfully")
 
 
-# safety voyager (G)
 def import_safety_voyager():
     sv = data_folder / "Safety Voyager"
     gdf_list = []
@@ -91,26 +85,11 @@ def import_safety_voyager():
     )
     print("safety voyager imported successfully")
 
-    # traveltimes (G)
-
 
 def import_bridges():
     # imports spatial bridge data from NJDOT shapefile
-    bridges = data_folder / "Bridges"
-    print(bridges)
-    for shapefile in glob.iglob(f"{bridges}/*.shp"):
-        file = Path(shapefile)
-        print(f"processing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile)
-        gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("bridges shapefile imported successfully")
+    import_shapefile("Bridges", "")
+
     suff_rating = data_folder / "Bridges" / "sufficient ratings.xlsx"
     df = pd.read_excel(suff_rating, sheet_name="Sheet1")
     df["Asset Name"] = df["Asset Name"].str.split("\s+\(").str[0]
@@ -123,6 +102,7 @@ def import_bridges():
     db.gis_make_geotable_from_query(query, "bridges_joined", "Point", 26918)
     dropquery = """drop table if exists bridges_excel, njdot_bridges_2019"""
     db.execute(dropquery)
+    print("join to bridge excel sheet successful")
 
 
 if __name__ == "__main__":
@@ -182,10 +162,6 @@ if __name__ == "__main__":
         explode=False,
     )
 
-    # shapefiles that require specific handling
-    import_safety_voyager()
-    import_bridges()
-
     # generic shapefile imports
     import_shapefile("ModelVolumes", "model_vols")
     import_shapefile("JobAccess", clip=False)
@@ -195,3 +171,7 @@ if __name__ == "__main__":
     import_shapefile("MercerCountyRoads")
     import_shapefile("MercerBikeFacilities")
     import_shapefile("CrashSegment")
+
+    # shapefiles that require more specific handling (e.g., joining to a CSV)
+    import_safety_voyager()
+    import_bridges()
