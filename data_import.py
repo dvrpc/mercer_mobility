@@ -41,75 +41,33 @@ def import_and_clip(
 
 
 # import model volume data (g drive)
-def import_model_volumes():
-    model_folder = data_folder / "ModelVolumes"
-    for shapefile in glob.iglob(f"{model_folder}/*.SHP"):
+def import_shapefile(folder_string: str, output_string: str = "", clip: bool = True):
+    folder = data_folder / folder_string
+    print(folder)
+    for shapefile in glob.iglob(
+        f"{folder}/*.[sS][hH][pP]"
+    ):  # brackets deal with case differences between different folders (shp vs SHP)
         file = Path(shapefile)
+        print(file)
         print(f"processing {file.stem}, please wait...")
         gdf = gpd.read_file(shapefile)
         gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            "model_vol_" + str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("model volumes imported successfully")
-
-
-# import job access data (sarah's email)
-def import_jobs():
-    jobs = data_folder / "JobAccess"
-    for shapefile in glob.iglob(f"{jobs}/*.shp"):
-        file = Path(shapefile)
-        print(f"importing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile, mask=mask_layer)
-        gdf = gdf.to_crs(26918)
-        db.import_geodataframe(
-            gdf,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("job access imported successfully")
-
-
-# adt data (G)
-def import_adt():
-    adt = data_folder / "NJDOT2021_ADT"
-    for shapefile in glob.iglob(f"{adt}/*.shp"):
-        file = Path(shapefile)
-        print(f"importing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile)
-        gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("adt imported successfully")
-
-
-# pavement condition (G)
-def import_pavement_conditions():
-    pci = data_folder / "Pavement Condition" / "Pavement Condition Index"
-    print(pci)
-    for shapefile in glob.iglob(f"{pci}/*.shp"):
-        file = Path(shapefile)
-        print(f"processing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile)
-        gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("pavement condition shapefile imported successfully")
+        if clip == True:
+            clipped = gpd.clip(gdf, mask_layer)
+            db.import_geodataframe(
+                clipped,
+                output_string + str(file.stem).lower(),
+                explode=True,
+                gpd_kwargs={"if_exists": "replace"},
+            )
+        else:
+            db.import_geodataframe(
+                gdf,
+                output_string + str(file.stem).lower(),
+                explode=True,
+                gpd_kwargs={"if_exists": "replace"},
+            )
+    print(f"{output_string} imported successfully")
 
 
 # safety voyager (G)
@@ -134,42 +92,6 @@ def import_safety_voyager():
     print("safety voyager imported successfully")
 
     # traveltimes (G)
-
-
-def import_travel_times():
-    tt = data_folder / "TravelTimes"
-    print(tt)
-    for shapefile in glob.iglob(f"{tt}/*.shp"):
-        file = Path(shapefile)
-        print(f"processing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile)
-        gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("travel time shapefile imported successfully")
-
-
-def import_mercer_roads():
-    roads = data_folder / "MercerCountyRoads"
-    print(roads)
-    for shapefile in glob.iglob(f"{roads}/*.shp"):
-        file = Path(shapefile)
-        print(f"processing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile)
-        gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("mercer jurisdiction roads shapefile imported successfully")
 
 
 def import_bridges():
@@ -201,24 +123,6 @@ def import_bridges():
     db.gis_make_geotable_from_query(query, "bridges_joined", "Point", 26918)
     dropquery = """drop table if exists bridges_excel, njdot_bridges_2019"""
     db.execute(dropquery)
-
-
-def import_mercer_bike_facilities():
-    facilities = data_folder / "MercerBikeFacilities"
-    print(facilities)
-    for shapefile in glob.iglob(f"{facilities}/*.shp"):
-        file = Path(shapefile)
-        print(f"processing {file.stem}, please wait...")
-        gdf = gpd.read_file(shapefile)
-        gdf = gdf.to_crs(26918)
-        clipped = gpd.clip(gdf, mask_layer)
-        db.import_geodataframe(
-            clipped,
-            str(file.stem).lower(),
-            explode=True,
-            gpd_kwargs={"if_exists": "replace"},
-        )
-    print("mercer bike facilities shapefile imported successfully")
 
 
 if __name__ == "__main__":
@@ -277,12 +181,17 @@ if __name__ == "__main__":
         "dem_emp_forecast_2015",
         explode=False,
     )
-    import_model_volumes()
-    import_adt()
+
+    # shapefiles that require specific handling
     import_safety_voyager()
-    import_pavement_conditions()
-    import_jobs()
-    import_mercer_roads()
-    import_travel_times()
     import_bridges()
-    import_mercer_bike_facilities()
+
+    # generic shapefile imports
+    import_shapefile("ModelVolumes", "model_vols")
+    import_shapefile("JobAccess", clip=False)
+    import_shapefile("NJDOT2021_ADT")
+    import_shapefile("Pavement Condition/Pavement Condition Index")
+    import_shapefile("TravelTimes")
+    import_shapefile("MercerCountyRoads")
+    import_shapefile("MercerBikeFacilities")
+    import_shapefile("CrashSegment")
