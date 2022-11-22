@@ -18,8 +18,8 @@ a repo to automate download and analysis of data for mercer county
 
 :white_check_mark: clip to mercer roads
 
-:black_square_button: add pm model vols and segment crash data
+:white_check_mark: add pm model vols and segment crash data
 
-:black_square_button: refactor/create shapefile import script
+:white_check_mark: refactor/create shapefile import script
 
 :black_square_button: conflate to target road network
