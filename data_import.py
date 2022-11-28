@@ -62,7 +62,7 @@ def import_shapefile(folder_string: str, output_string: str = "", clip: bool = T
                 explode=True,
                 gpd_kwargs={"if_exists": "replace"},
             )
-    print(f"{output_string} imported successfully")
+        print(f"{output_string} imported successfully")
 
 
 def import_safety_voyager():
@@ -171,6 +171,9 @@ if __name__ == "__main__":
     import_shapefile("MercerCountyRoads")
     import_shapefile("MercerBikeFacilities")
     import_shapefile("CrashSegment")
+    import_shapefile(
+        "Bottlenecks"
+    )  # this is a shapefile that tom made, not the typical cmp bottlenecks
 
     # shapefiles that require more specific handling (e.g., joining to a CSV)
     import_safety_voyager()
