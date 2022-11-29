@@ -14,9 +14,9 @@ db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
-# this should be whatever you'd like to clip to
+# this should be whatever you'd like to clip to. extended mercer's boundaries by 10 meters to account for two county line roads
 mask_layer = gis_db.gdf(
-    "select * from boundaries.countyboundaries where co_name = 'Mercer' and state_name = 'New Jersey'",
+    "select st_buffer(shape, 10) as shape from boundaries.countyboundaries where co_name = 'Mercer' and state_name = 'New Jersey'",
     geom_col="shape",
 )
 mask_layer = mask_layer.to_crs(26918)
@@ -39,6 +39,13 @@ def import_and_clip(
 
 
 def import_shapefile(folder_string: str, output_string: str = "", clip: bool = True):
+    """
+    imports a shapefile from the data folder.
+
+    :param folder_string: name of subfolder with  shapefile(s)
+    :param output_string: what you'd like it to be called in postgres
+    :param clip: bool, clip to muni boundry or not"""
+
     folder = data_folder / folder_string
     for shapefile in glob.iglob(
         f"{folder}/*.[sS][hH][pP]"
