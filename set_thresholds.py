@@ -12,8 +12,17 @@ def create_threshold_view(
     sign: str,
     threshold,
     and_or_statement: str = "",
+    # append_to_views: bool = True,
 ):
-    """creates a view in postgres based on a threshold"""
+    """creates a view in postgres based on a threshold
+
+    :param viewname: what you'd like the view to be called
+    :param table: tablename you're selecting from
+    :param column: column you're using for a threshold
+    :param sign: > < or =
+    :param threshold: threshold you want to set for a layer
+    :param and_or_statement: if you want to add conditional and/or statements to base query
+    :param append_to_views: only change if you want to later clip to road buffer (vs joining based on columns)"""
     db.execute(
         f"""create or replace view view_{viewname} as(
                     select * from {table}  
@@ -22,6 +31,22 @@ def create_threshold_view(
                     );"""
     )
     views.append("view_" + viewname)
+
+
+def clip_to_mercerroads(view, line_buffer: float):
+    """clips segments in "views list" to a small buffer around mercer roads"""
+    db.execute(
+        f"""drop table if exists {view}_clipped;
+            create table {view}_clipped as(
+            with buffered as (
+                select st_buffer(geom, {line_buffer}) as geom from mercercountyjurisdictionroads_frommercer
+                )
+                select a.* from public.{view} a 
+                inner join buffered b 
+                on st_intersects(a.geom, b.geom)
+                )"""
+    )
+    print(f"creating clipped table for {view} view...")
 
 
 def set_thresholds():
@@ -63,6 +88,24 @@ def set_thresholds():
         "or severity_rating_code = 'Suspected Serious Injury'",
     )
 
+    create_threshold_view(
+        "crashrate_seg",
+        "crash_statistics_by_segment_mc",
+        "crrate",
+        ">",
+        482,
+        append_to_views=False,
+    )
+
+    create_threshold_view(
+        "ksi_rate_seg",
+        "crash_statistics_by_segment_mc",
+        "ksicrrate",
+        ">",
+        2.5,
+        append_to_views=False,
+    )
+
     for timeperiod in ["0809", "0910", "1617", "1718"]:
         create_threshold_view(
             f"tti_{timeperiod}",
@@ -84,21 +127,6 @@ def set_thresholds():
         )
 
 
-def clip_to_mercerroads(view, line_buffer: float):
-    db.execute(
-        f"""drop table if exists {view}_clipped;
-            create table {view}_clipped as(
-            with buffered as (
-                select st_buffer(geom, {line_buffer}) as geom from mercercountyjurisdictionroads_frommercer
-                )
-                select a.* from public.{view} a 
-                inner join buffered b 
-                on st_intersects(a.geom, b.geom)
-                )"""
-    )
-    print(f"creating clipped table for {view} view...")
-
-
 set_thresholds()
-for view in views:
-    clip_to_mercerroads(view, 15.24)  # 15.24 is meters, == 50'
+# for view in views:
+#     clip_to_mercerroads(view, 15.24)  # 15.24 is meters, == 50'
