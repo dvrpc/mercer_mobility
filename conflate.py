@@ -20,20 +20,20 @@ def conflation_schema():
     db.execute(query)
 
 
-def convert_to_point():
+def convert_to_point(input_table: str, output_table: str, unique_id: str):
     # converts line layer to be conflated to point using st_interpolate point
-    query = """drop table if exists tmp.vc100_pt;
-                create table tmp.vc100_pt as
+    query = f"""drop table if exists tmp.{output_table}_pt;
+                create table tmp.{output_table}_pt as
                 select
                     n,
-                    "no" as id,
+                    {unique_id} as id,
                     ST_LineInterpolatePoint(
                         st_linemerge((st_dump(geom)).geom),
                     least(n *(4 / st_length(geom)), 1.0)
                     )::GEOMETRY(POINT,
                     26918) as geom
                 from
-                    view_am_vc100
+                    {input_table}
                 cross join Generate_Series(0, ceil(st_length(geom) / 4)::INT) as n
                 where
                     st_length(geom) > 0;"""
@@ -152,7 +152,7 @@ def conflate_to_base():
 
 if __name__ == "__main__":
     # conflation_schema()
-    convert_to_point()
+    convert_to_point("view_pm_vc100", "pmvc100", '"no"')
     # point_to_base_layer()
     # point_count()
     # total_point_count()
