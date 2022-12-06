@@ -94,7 +94,7 @@ def set_thresholds():
         "crrate",
         ">",
         482,
-        append_to_views=False,
+        # append_to_views=False,
     )
 
     create_threshold_view(
@@ -103,7 +103,7 @@ def set_thresholds():
         "ksicrrate",
         ">",
         2.5,
-        append_to_views=False,
+        # append_to_views=False,
     )
 
     for timeperiod in ["0809", "0910", "1617", "1718"]:
@@ -125,6 +125,7 @@ def set_thresholds():
             2,
             f"and ptiwkd{timeperiod} <= 3",
         )
+    print("thresholds set")
 
 
 set_thresholds()
