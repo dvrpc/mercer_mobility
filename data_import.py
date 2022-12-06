@@ -115,6 +115,9 @@ def import_bridges():
 if __name__ == "__main__":
     import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
     import_and_clip(
+        "select * from transportation.nj_centerline", "shape", "nj_centerline"
+    )
+    import_and_clip(
         "select * from transportation.pedestriannetwork_gaps",
         "shape",
         "sidewalk_gaps_clipped",
