@@ -12,6 +12,7 @@ load_dotenv()
 
 db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
+conflate_db = Database.from_config("conflate", "conflate")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
 # this should be whatever you'd like to clip to. extended mercer's boundaries by 10 meters to account for two county line roads
@@ -28,8 +29,9 @@ def import_and_clip(
     sql_tablename_output=str,
     gpd_kwargs={"if_exists": "replace"},
     explode=True,
+    db_to_use=gis_db,
 ):
-    gdf = gis_db.gdf(sql_query, geom_col)
+    gdf = db_to_use.gdf(sql_query, geom_col)
     gdf = gdf.to_crs(26918)
     clipped = gpd.clip(gdf, mask_layer, keep_geom_type=True)
     db.import_geodataframe(
@@ -112,19 +114,14 @@ def import_bridges():
     print("join to bridge excel sheet successful")
 
 
-def import_centerlines():
-    # imports centerlines from arcgis service
-    path = "https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/Tran_road/FeatureServer/0/query?outFields=*&where=COUNTY_L=882229%20OR%20COUNTY_R=882229&outSR=26918&f=geojson"
-    gdf = gpd.read_file(path)
-    gdf = gdf.to_crs(26918)
-    db.import_geodataframe(
-        gdf, "nj_centerlines", explode=True, gpd_kwargs={"if_exists": "replace"}
-    )
-    print("nj_centerlines imported successfully")
-
-
 if __name__ == "__main__":
     import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
+    import_and_clip(
+        "select * from public.nj_centerline",
+        "geom",
+        "nj_centerline",
+        db_to_use=conflate_db,
+    )
     import_and_clip(
         "select * from transportation.pedestriannetwork_gaps",
         "shape",
@@ -191,7 +188,6 @@ if __name__ == "__main__":
     import_shapefile("CrashSegment")
     import_shapefile("Bottlenecks")  # this is a shapefile that tom made
 
-    # # shapefiles that require more specific handling (e.g., joining to a CSV)
+    # shapefiles that require more specific handling (e.g., joining to a CSV)
     import_safety_voyager()
     import_bridges()
-    import_centerlines()
