@@ -178,9 +178,7 @@ if __name__ == "__main__":
     import_shapefile("MercerCountyRoads")
     import_shapefile("MercerBikeFacilities")
     import_shapefile("CrashSegment")
-    import_shapefile(
-        "Bottlenecks"
-    )  # this is a shapefile that tom made, not the typical cmp bottlenecks
+    import_shapefile("Bottlenecks")  # this is a shapefile that tom made
 
     # shapefiles that require more specific handling (e.g., joining to a CSV)
     import_safety_voyager()
