@@ -112,11 +112,19 @@ def import_bridges():
     print("join to bridge excel sheet successful")
 
 
+def import_centerlines():
+    # imports centerlines from arcgis service
+    path = "https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/Tran_road/FeatureServer/0/query?outFields=*&where=COUNTY_L=882229%20OR%20COUNTY_R=882229&outSR=26918&f=geojson"
+    gdf = gpd.read_file(path)
+    gdf = gdf.to_crs(26918)
+    db.import_geodataframe(
+        gdf, "nj_centerlines", explode=True, gpd_kwargs={"if_exists": "replace"}
+    )
+    print("nj_centerlines imported successfully")
+
+
 if __name__ == "__main__":
     import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
-    import_and_clip(
-        "select * from transportation.nj_centerline", "shape", "nj_centerline"
-    )
     import_and_clip(
         "select * from transportation.pedestriannetwork_gaps",
         "shape",
@@ -172,7 +180,7 @@ if __name__ == "__main__":
         explode=False,
     )
 
-    # generic shapefile imports
+    # # generic shapefile imports
     import_shapefile("ModelVolumes", "model_vols")
     import_shapefile("JobAccess", clip=False)
     import_shapefile("NJDOT2021_ADT")
@@ -183,6 +191,7 @@ if __name__ == "__main__":
     import_shapefile("CrashSegment")
     import_shapefile("Bottlenecks")  # this is a shapefile that tom made
 
-    # shapefiles that require more specific handling (e.g., joining to a CSV)
+    # # shapefiles that require more specific handling (e.g., joining to a CSV)
     import_safety_voyager()
     import_bridges()
+    import_centerlines()
