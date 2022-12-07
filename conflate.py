@@ -13,9 +13,9 @@ data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
 
 def conflation_schema():
-    query = """drop schema if exists tmp;
+    query = """drop schema if exists tmp CASCADE;
                 create schema tmp;
-                drop schema if exists conflated;
+                drop schema if exists conflated CASCADE;
                 create schema conflated;"""
     db.execute(query)
 
@@ -40,20 +40,21 @@ def convert_to_point(input_table: str, output_table: str, unique_id: str):
     db.execute(query)
 
 
-def point_to_base_layer():
+def point_to_base_layer(baselayer: str, output_table: str, distance_threshold: int):
     # selects points that are within threshold distance from base layer (i.e. layer you're conflating to)
-    query = """create view tmp_vc100_point_to_xd as
+    query = f"""drop table if exists tmp.{output_table}_point_to_base;
+                create table tmp.{output_table}_point_to_base as
                 select
-                    a.id as vc100_id,
+                    a.id as {output_table}_id,
                     b.globalid,
                     a.geom
                 from
-                    vc100_pt a,
-                    nj_centerline b
+                    tmp.{output_table}_pt a,
+                    public.{baselayer} b
                 where
                     st_dwithin(a.geom,
                     b.geom,
-                    5)
+                    {distance_threshold})
                 order by
                     a.n,
                     st_distance(a.geom,
@@ -62,74 +63,77 @@ def point_to_base_layer():
     db.execute(query)
 
 
-def point_count():
+def point_count(output_table: str, distance_threshold: int):
     # counts the number of records that are within distance threshold of base layer
-    query = """create view tmp_vc100_point10_count as
+    query = f"""drop table if exists tmp.{output_table}_point{distance_threshold}_count;
+            create table tmp.{output_table}_point{distance_threshold}_count as
             select
                 globalid,
-                count(*) as pnt_10_count,
-                vc100_id
+                count(*) as pnt_{distance_threshold}_count,
+                {output_table}_id
             from
-                tmp_vc100_point_to_xd
+                tmp.{output_table}_point_to_base
             group by
                 globalid,
-                vc100_id;
+                {output_table}_id;
             """
     db.execute(query)
 
 
-def total_point_count():
+def total_point_count(output_table: str):
     # counts total points in line layer
-    query = """create view tmp_vc100_total_point_count as
+    query = f"""drop table if exists tmp.{output_table}_total_point_count;
+                create table tmp.{output_table}_total_point_count as
                 select
                     globalid,
-                    count(*) as vc100_total_point_count
+                    count(*) as {output_table}_total_point_count
                 from
-                    tmp_vc100_point_to_xd
+                    tmp.{output_table}_point_to_base
                 group by
                     globalid;
                             """
     db.execute(query)
 
 
-def most_occuring_in_threshold():
+def most_occuring_in_threshold(output_table: str, distance_threshold: int):
     # finds percent match of points within distance threshold vs total points
-    query = """create view tmp_vc100_point10_most_occurring as
+    query = f"""drop table if exists tmp.{output_table}point{distance_threshold}_most_occurring;
+                create table tmp.{output_table}point{distance_threshold}_most_occurring as
                 select
                     distinct on
                     (a.globalid) a.globalid,
-                    a.pnt_10_count,
-                    b.vc100_total_point_count,
+                    a.pnt_{distance_threshold}_count,
+                    b.{output_table}_total_point_count,
                     round(
                         (
                             (
-                                a.pnt_10_count::numeric / b.vc100_total_point_count::numeric
+                                a.pnt_{distance_threshold}_count::numeric / b.{output_table}_total_point_count::numeric
                             ) * 100
                         ),
                         0
-                    ) as pnt_10_pct_match,
-                    a.vc100_id
+                    ) as pnt_{distance_threshold}_pct_match,
+                    a.{output_table}_id
                 from
-                    tmp_vc100_point10_count a
-                left join tmp_vc100_total_point_count b on
+                    tmp.{output_table}_point{distance_threshold}_count a
+                left join tmp.{output_table}_total_point_count b on
                     (a.globalid = b.globalid)
                 order by
                     a.globalid,
-                    a.pnt_10_count desc;
+                    a.pnt_{distance_threshold}_count desc;
                             """
     db.execute(query)
 
 
-def conflate_to_base():
+def conflate_to_base(output_table: str, distance_threshold: int, baselayer: str):
     # finds percent match of points within distance threshold vs total points
-    query = """create view tmp_vc100_to_centerline as
+    query = f"""create table tmp.{output_table}_to_centerline as
                 select
                     distinct on
                     (a.globalid) a.*,
-                    b.vc100_id,
-                    b.pnt_10_count,
-                    b.vc100_total_point_count,
-                    b.pnt_10_pct_match,
+                    b.{output_table}_id,
+                    b.pnt_{distance_threshold}_count,
+                    b.{output_table}_total_point_count,
+                    b.pnt_{distance_threshold}_pct_match,
                     round(
                         (st_length(a.geom) / 4)::numeric,
                         0
@@ -137,24 +141,36 @@ def conflate_to_base():
                     round(
                         (
                             (
-                                b.vc100_total_point_count / (st_length(a.geom) / 4)
+                                b.{output_table}_total_point_count / (st_length(a.geom) / 4)
                             ) * 100
                         )::numeric,
                         0
                     ) as possible_coverage
                 from
-                    nj_centerline a
-                left join tmp_vc100_point10_most_occurring b on
+                    {baselayer} a
+                left join tmp.{output_table}point{distance_threshold}_most_occurring b on
                     a.globalid = b.globalid;
                             """
     db.execute(query)
 
 
+def conflator(
+    input_table: str,
+    output_table: str,
+    unique_id: str,
+    base_layer: str,
+    distance_threshold: int = 5,
+):
+    conflation_schema()
+    convert_to_point(input_table, output_table, unique_id)
+    point_to_base_layer(base_layer, output_table, distance_threshold)
+    point_count(output_table, distance_threshold)
+    total_point_count(output_table)
+    most_occuring_in_threshold(output_table, distance_threshold)
+    conflate_to_base(output_table, distance_threshold, base_layer)
+
+    pass
+
+
 if __name__ == "__main__":
-    # conflation_schema()
-    convert_to_point("view_pm_vc100", "pmvc100", '"no"')
-    # point_to_base_layer()
-    # point_count()
-    # total_point_count()
-    # most_occuring_in_threshold()
-    # conflate_to_base()
+    conflator("view_pm_vc100", "pmvc100", "uid", "nj_centerline", 5)
