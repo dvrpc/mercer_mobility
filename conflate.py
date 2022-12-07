@@ -181,3 +181,26 @@ if __name__ == "__main__":
 
     # pti/tti, possible coverage >= 80
     conflator("view_pti_0809", "pti0809", "uid", "nj_centerline", 10)
+
+    # nj_transit routes, possible coverage >=80
+    conflator("nj_transit_routes", "njt", "uid", "nj_centerline", 8)
+
+    # mercer jurisdiction roads, possible coverage >= 75
+    conflator(
+        "mercercountyjurisdictionroads_frommercer",
+        "mercer_roads",
+        "uid",
+        "nj_centerline",
+        8,
+    )
+
+    # pavement condition, possible coverage >= 75
+    conflator("pavement_evaluation", "pavement", "uid", "nj_centerline", 5)
+
+    # crash segments, possible coverage >= 75
+    conflator("crash_statistics_by_segment_mc", "crash_seg", "uid", "nj_centerline", 5)
+
+    # sw gaps (single segment in center of street) possible coverage >= 75
+    conflator("sidewalk_gaps_clipped", "sidewalk_gaps", "uid", "nj_centerline", 5)
+
+    # bike facilities (layer tbd)
