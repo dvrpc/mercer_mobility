@@ -176,6 +176,11 @@ if __name__ == "__main__":
         "dem_emp_forecast_2015",
         explode=False,
     )
+    import_and_clip(
+        "select * from transportation.njtransit_transitroutes",
+        "shape",
+        "nj_transit_routes",
+    )
 
     # # generic shapefile imports
     import_shapefile("ModelVolumes", "model_vols")
