@@ -172,7 +172,12 @@ def conflator(
 
 if __name__ == "__main__":
     conflation_schema()
+
+    # model outputs, possible coverage >= 70
     conflator("view_am_vc100", "amvc100", "uid", "nj_centerline", 5)
     conflator("view_pm_vc100", "pmvc100", "uid", "nj_centerline", 5)
     conflator("view_am_vc85", "amvc85", "uid", "nj_centerline", 5)
     conflator("view_pm_vc85", "pmvc85", "uid", "nj_centerline", 5)
+
+    # pti/tti, possible coverage >= 80
+    conflator("view_pti_0809", "pti0809", "uid", "nj_centerline", 10)
