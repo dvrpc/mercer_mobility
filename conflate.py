@@ -126,7 +126,8 @@ def most_occuring_in_threshold(output_table: str, distance_threshold: int):
 
 def conflate_to_base(output_table: str, distance_threshold: int, baselayer: str):
     # finds percent match of points within distance threshold vs total points
-    query = f"""create table tmp.{output_table}_to_centerline as
+    query = f"""drop table if exists conflated.{output_table}_to_centerline;
+                create table conflated.{output_table}_to_centerline as
                 select
                     distinct on
                     (a.globalid) a.*,
@@ -161,7 +162,6 @@ def conflator(
     base_layer: str,
     distance_threshold: int = 5,
 ):
-    conflation_schema()
     convert_to_point(input_table, output_table, unique_id)
     point_to_base_layer(base_layer, output_table, distance_threshold)
     point_count(output_table, distance_threshold)
@@ -169,8 +169,10 @@ def conflator(
     most_occuring_in_threshold(output_table, distance_threshold)
     conflate_to_base(output_table, distance_threshold, base_layer)
 
-    pass
-
 
 if __name__ == "__main__":
+    conflation_schema()
+    conflator("view_am_vc100", "amvc100", "uid", "nj_centerline", 5)
     conflator("view_pm_vc100", "pmvc100", "uid", "nj_centerline", 5)
+    conflator("view_am_vc85", "amvc85", "uid", "nj_centerline", 5)
+    conflator("view_pm_vc85", "pmvc85", "uid", "nj_centerline", 5)
