@@ -50,14 +50,27 @@ def clip_to_mercerroads(view, line_buffer: float):
 
 
 def set_thresholds():
-    for val in [50, 80]:
-        create_threshold_view(
-            f"bridges{val}", "bridges_joined", "unofficial_sufficiency_rating", "<", val
-        )
 
-    for val in [40, 70]:
-        create_threshold_view(f"pavement{val}", "pavement_evaluation", "pci", "<", val)
+    # bridges
+    create_threshold_view(
+        f"bridges_1pt",
+        "bridges_joined",
+        "unofficial_sufficiency_rating",
+        "<=",
+        50,
+        "and unofficial_sufficiency_rating > 20",
+    )
+    create_threshold_view(
+        f"bridges_2pt", "bridges_joined", "unofficial_sufficiency_rating", "<=", 20
+    )
 
+    # pavement
+    create_threshold_view(
+        f"pavement1point", "pavement_evaluation", "pci", "<=", 60, "and pci > 30"
+    )
+    create_threshold_view(f"pavement2point", "pavement_evaluation", "pci", "<=", 30)
+
+    # model data
     for val in [85, 100]:
         for period in ["model_vols2025_am_link", "model_vols2025_pm_link"]:
             create_threshold_view(
@@ -67,9 +80,10 @@ def set_thresholds():
                 ">",
                 val,
             )
-
+    # sidewalk
     create_threshold_view("sw_gaps", "sidewalk_gaps_clipped", "sw_ratio", "<", ".5")
 
+    # crashes
     create_threshold_view(
         "vulnerable_user_crashes",
         "safety_voyager",
@@ -89,23 +103,24 @@ def set_thresholds():
     )
 
     create_threshold_view(
-        "crashrate_seg",
+        "crashrate_seg_1_sd",
         "crash_statistics_by_segment_mc",
         "crrate",
-        ">",
-        482,
+        ">=",
+        1256,  # st dev is 769. mean is 487. total is 1256.
+        "and crrate < 2025"
         # append_to_views=False,
     )
 
     create_threshold_view(
-        "ksi_rate_seg",
+        "crashrate_seg_2_sd",
         "crash_statistics_by_segment_mc",
-        "ksicrrate",
-        ">",
-        2.5,
+        "crrate",
+        ">=",
+        2025,  # 1256 (above) plus another st dev
         # append_to_views=False,
     )
-
+    # pti/tti
     for timeperiod in ["0809", "0910", "1617", "1718"]:
         create_threshold_view(
             f"tti_{timeperiod}",
@@ -113,7 +128,7 @@ def set_thresholds():
             f"ttiwkd{timeperiod}",
             ">=",
             1.2,
-            f"and ttiwkd{timeperiod} <= 1.5",
+            f"and ttiwkd{timeperiod} < 1.5",
         )
 
     for timeperiod in ["0809", "0910", "1617", "1718"]:
@@ -123,8 +138,27 @@ def set_thresholds():
             f"ptiwkd{timeperiod}",
             ">=",
             2,
-            f"and ptiwkd{timeperiod} <= 3",
+            f"and ptiwkd{timeperiod} < 3",
         )
+
+    for timeperiod in ["0809", "0910", "1617", "1718"]:
+        create_threshold_view(
+            f"tti_{timeperiod}_above1pt5",
+            "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
+            f"ttiwkd{timeperiod}",
+            ">=",
+            1.5,
+        )
+
+    for timeperiod in ["0809", "0910", "1617", "1718"]:
+        create_threshold_view(
+            f"pti_{timeperiod}_above3",
+            "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
+            f"ptiwkd{timeperiod}",
+            ">=",
+            3,
+        )
+
     print("thresholds set")
 
 
