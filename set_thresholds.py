@@ -121,43 +121,22 @@ def set_thresholds():
         # append_to_views=False,
     )
     # pti/tti
-    for timeperiod in ["0809", "0910", "1617", "1718"]:
-        create_threshold_view(
-            f"tti_{timeperiod}",
-            "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
-            f"ttiwkd{timeperiod}",
-            ">=",
-            1.2,
-            f"and ttiwkd{timeperiod} < 1.5",
-        )
+    # for timeperiod in ["0809", "0910", "1617", "1718"]:
+    create_threshold_view(
+        f"tti_all",
+        "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
+        f"ttiwkd",
+        ">=",
+        1.2,
+    )
 
-    for timeperiod in ["0809", "0910", "1617", "1718"]:
-        create_threshold_view(
-            f"pti_{timeperiod}",
-            "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
-            f"ptiwkd{timeperiod}",
-            ">=",
-            2,
-            f"and ptiwkd{timeperiod} < 3",
-        )
-
-    for timeperiod in ["0809", "0910", "1617", "1718"]:
-        create_threshold_view(
-            f"tti_{timeperiod}_above1pt5",
-            "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
-            f"ttiwkd{timeperiod}",
-            ">=",
-            1.5,
-        )
-
-    for timeperiod in ["0809", "0910", "1617", "1718"]:
-        create_threshold_view(
-            f"pti_{timeperiod}_above3",
-            "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
-            f"ptiwkd{timeperiod}",
-            ">=",
-            3,
-        )
+    create_threshold_view(
+        f"pti_all",
+        "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
+        f"ptiwkd",
+        ">=",
+        2,
+    )
 
     print("thresholds set")
 
