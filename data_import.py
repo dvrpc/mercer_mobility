@@ -181,8 +181,13 @@ if __name__ == "__main__":
         "shape",
         "nj_transit_routes",
     )
+    import_and_clip(
+        "select * from transportation.lts_network where bikefacili = 'No Accomodation' or bikefacili ='Sharrows' ",
+        "shape",
+        "lts_deficient_facils",
+    )
 
-    # # generic shapefile imports
+    # generic shapefile imports
     import_shapefile("ModelVolumes", "model_vols")
     import_shapefile("JobAccess", clip=False)
     import_shapefile("NJDOT2021_ADT")
