@@ -126,8 +126,8 @@ def most_occuring_in_threshold(output_table: str, distance_threshold: int):
 
 def conflate_to_base(output_table: str, distance_threshold: int, baselayer: str):
     # finds percent match of points within distance threshold vs total points
-    query = f"""drop table if exists conflated.{output_table}_to_centerline;
-                create table conflated.{output_table}_to_centerline as
+    query = f"""drop table if exists conflated.{output_table}_to_{baselayer};
+                create table conflated.{output_table}_to_{baselayer} as
                 select
                     distinct on
                     (a.globalid) a.*,
@@ -180,7 +180,8 @@ if __name__ == "__main__":
     conflator("view_pm_vc85", "pmvc85", "uid", "nj_centerline", 5)
 
     # pti/tti, possible coverage >= 80
-    conflator("view_pti_0809", "pti0809", "uid", "nj_centerline", 10)
+    for i in ["tti", "pti"]:
+        conflator(f"view_{i}_all", f"{i}", "uid", "nj_centerline", 10)
 
     # nj_transit routes, possible coverage >=80
     conflator("nj_transit_routes", "njt", "uid", "nj_centerline", 8)
@@ -204,3 +205,4 @@ if __name__ == "__main__":
     conflator("sidewalk_gaps_clipped", "sidewalk_gaps", "uid", "nj_centerline", 5)
 
     # bike facilities (layer tbd)
+    conflator("lts_deficient_facils", "lts_no_facils", "uid", "nj_centerline", 5)
