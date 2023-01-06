@@ -114,7 +114,7 @@ def critical_flag():
 
 
 if __name__ == "__main__":
-    # megajoin()
-    # create_point_cols()
-    # assign_points()
+    megajoin()
+    create_point_cols()
+    assign_points()
     critical_flag()
