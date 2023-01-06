@@ -186,6 +186,12 @@ if __name__ == "__main__":
         "shape",
         "lts_deficient_facils",
     )
+    import_and_clip(
+        "select * from boundaries.urbanareas_nj",
+        "shape",
+        "uza",
+        explode=True,
+    )
 
     # generic shapefile imports
     import_shapefile("ModelVolumes", "model_vols")
