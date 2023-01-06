@@ -106,7 +106,15 @@ def assign_points():
     db.execute(query)
 
 
+def critical_flag():
+    query = """
+        alter table point_assignment.total_points add column critical int;
+        UPDATE point_assignment.total_points SET critical = 1 WHERE bridge_rating <= 20;"""
+    db.execute(query)
+
+
 if __name__ == "__main__":
-    megajoin()
-    create_point_cols()
-    assign_points()
+    # megajoin()
+    # create_point_cols()
+    # assign_points()
+    critical_flag()
