@@ -1,5 +1,4 @@
 from pg_data_etl import Database
-import geopandas as gpd
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -8,7 +7,6 @@ load_dotenv()
 
 db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
-conflate_db = Database.from_config("conflate", "conflate")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
 
