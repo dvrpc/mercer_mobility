@@ -164,6 +164,7 @@ def conflator(
     base_layer: str,
     column: str,
     distance_threshold: int = 5,
+    coverage_threshold: int = 70,
 ):
     convert_to_point(input_table, output_table, unique_id)
     point_to_base_layer(base_layer, output_table, distance_threshold)
@@ -181,7 +182,8 @@ def conflator(
                 {column}
             from conflated.{output_table}_to_nj_centerline a
             inner join public.{input_table} b
-            on a.{output_table}_id = b.uid"""
+            on a.{output_table}_id = b.uid
+            where a.possible_coverage > {coverage_threshold}"""
     db.execute(query)
 
 
@@ -197,7 +199,7 @@ def rejoiner():
             c."volcapra~2" as amvc85, 
             d.crrate, 
             e.bikefacili, 
-            f."type", 
+            f."type" as countyrd, 
             g.line, 
             h.pci_new, 
             i."volcapra~2" as pmvc100,
@@ -254,30 +256,30 @@ def rejoiner():
             l.ttiwkd2300,
             m.sw_ratio 
         from public.nj_centerline a
-        left join amvc100 b 
-        on b."index" = a."index" 
-        left join amvc85 c 
-        on c."index" = a."index" 
-        left join crash_seg d
-        on d."index" = a."index" 
-        left join lts_no_facils e 
-        on e."index" = a."index" 
-        left join mercer_roads f
-        on f."index" = a."index" 
-        left join njt g
-        on g."index" = a."index" 
-        left join pavement h
-        on h."index" = a."index" 
-        left join pmvc100 i
-        on i."index" = a."index" 
-        left join pmvc85 j
-        on j."index" = a."index" 
-        left join pti k
-        on k."index" = a."index" 
-        left join tti l
-        on l."index" = a."index" 
-        left join sidewalk_gaps m
-        on m."index" = a."index" 
+        left join rejoined.amvc100 b 
+            on b."index" = a."index" 
+        left join rejoined.amvc85 c 
+            on c."index" = a."index" 
+        left join rejoined.crash_seg d
+            on d."index" = a."index" 
+        left join rejoined.lts_no_facils e 
+            on e."index" = a."index" 
+        left join rejoined.mercer_roads f
+            on f."index" = a."index" 
+        left join rejoined.njt g
+            on g."index" = a."index" 
+        left join rejoined.pavement h
+            on h."index" = a."index" 
+        left join rejoined.pmvc100 i
+            on i."index" = a."index" 
+        left join rejoined.pmvc85 j
+            on j."index" = a."index" 
+        left join rejoined.pti k
+            on k."index" = a."index" 
+        left join rejoined.tti l
+            on l."index" = a."index" 
+        left join rejoined.sidewalk_gaps m
+            on m."index" = a."index" 
     """
     db.execute(query)
 
@@ -300,10 +302,11 @@ if __name__ == "__main__":
             "nj_centerline",
             "b.ttiwkd,b.ttiwkd0610,b.ttiwkd1015,b.ttiwkd1519,b.ttiwkd0709,b.ttiwkd1618,b.ttiwkd0006,b.ttiwkd0607,b.ttiwkd0708,b.ttiwkd0809,b.ttiwkd0910,b.ttiwkd1011,b.ttiwkd1112,b.ttiwkd1213,b.ttiwkd1314,b.ttiwkd1415,b.ttiwkd1516,b.ttiwkd1617,b.ttiwkd1718,b.ttiwkd1819,b.ttiwkd1920,b.ttiwkd2021,b.ttiwkd2122,b.ttiwkd2223,b.ttiwkd2300,b.ptiwkd,b.ptiwkd0610,b.ptiwkd1015,b.ptiwkd1519,b.ptiwkd0709,b.ptiwkd1618,b.ptiwkd0006,b.ptiwkd0607,b.ptiwkd0708,b.ptiwkd0809,b.ptiwkd0910,b.ptiwkd1011,b.ptiwkd1112,b.ptiwkd1213,b.ptiwkd1314,b.ptiwkd1415,b.ptiwkd1516,b.ptiwkd1617,b.ptiwkd1718,b.ptiwkd1819,b.ptiwkd1920,b.ptiwkd2021,b.ptiwkd2122,b.ptiwkd2223,b.ptiwkd2300",
             10,
+            80,
         )
 
     # nj_transit routes, possible coverage >=80
-    conflator("nj_transit_routes", "njt", "uid", "nj_centerline", "b.line", 8)
+    conflator("nj_transit_routes", "njt", "uid", "nj_centerline", "b.line", 8, 80)
 
     # mercer jurisdiction roads, possible coverage >= 75
     conflator(
@@ -313,10 +316,13 @@ if __name__ == "__main__":
         "nj_centerline",
         "b.type",
         8,
+        75,
     )
 
     # pavement condition, possible coverage >= 75
-    conflator("pavement_evaluation", "pavement", "uid", "nj_centerline", "b.pci_new", 5)
+    conflator(
+        "pavement_evaluation", "pavement", "uid", "nj_centerline", "b.pci_new", 5, 75
+    )
 
     # crash segments, possible coverage >= 75
     conflator(
@@ -326,6 +332,7 @@ if __name__ == "__main__":
         "nj_centerline",
         "b.crrate",
         5,
+        75,
     )
 
     # sw gaps (single segment in center of street) possible coverage >= 75
@@ -336,6 +343,7 @@ if __name__ == "__main__":
         "nj_centerline",
         "b.sw_ratio",
         5,
+        75,
     )
 
     # bike facilities (layer tbd)
