@@ -185,6 +185,103 @@ def conflator(
     db.execute(query)
 
 
+def rejoiner():
+    query = """
+        drop table if exists rejoined.all;
+        create table rejoined.all as
+        select 
+            a."index", 
+            a.sri, 
+            a.geom, 
+            b."volcapra~2" as amvc100, 
+            c."volcapra~2" as amvc85, 
+            d.crrate, 
+            e.bikefacili, 
+            f."type", 
+            g.line, 
+            h.pci_new, 
+            i."volcapra~2" as pmvc100,
+            j."volcapra~2" as pmvc85,
+            k.ptiwkd,
+            k.ptiwkd0610,
+            k.ptiwkd1015,
+            k.ptiwkd1519,
+            k.ptiwkd0709,
+            k.ptiwkd1618,
+            k.ptiwkd0006,
+            k.ptiwkd0607,
+            k.ptiwkd0708,
+            k.ptiwkd0809,
+            k.ptiwkd0910,
+            k.ptiwkd1011,
+            k.ptiwkd1112,
+            k.ptiwkd1213,
+            k.ptiwkd1314,
+            k.ptiwkd1415,
+            k.ptiwkd1516,
+            k.ptiwkd1617,
+            k.ptiwkd1718,
+            k.ptiwkd1819,
+            k.ptiwkd1920,
+            k.ptiwkd2021,
+            k.ptiwkd2122,
+            k.ptiwkd2223,
+            k.ptiwkd2300,
+            l.ttiwkd,
+            l.ttiwkd0610,
+            l.ttiwkd1015,
+            l.ttiwkd1519,
+            l.ttiwkd0709,
+            l.ttiwkd1618,
+            l.ttiwkd0006,
+            l.ttiwkd0607,
+            l.ttiwkd0708,
+            l.ttiwkd0809,
+            l.ttiwkd0910,
+            l.ttiwkd1011,
+            l.ttiwkd1112,
+            l.ttiwkd1213,
+            l.ttiwkd1314,
+            l.ttiwkd1415,
+            l.ttiwkd1516,
+            l.ttiwkd1617,
+            l.ttiwkd1718,
+            l.ttiwkd1819,
+            l.ttiwkd1920,
+            l.ttiwkd2021,
+            l.ttiwkd2122,
+            l.ttiwkd2223,
+            l.ttiwkd2300,
+            m.sw_ratio 
+        from public.nj_centerline a
+        left join amvc100 b 
+        on b."index" = a."index" 
+        left join amvc85 c 
+        on c."index" = a."index" 
+        left join crash_seg d
+        on d."index" = a."index" 
+        left join lts_no_facils e 
+        on e."index" = a."index" 
+        left join mercer_roads f
+        on f."index" = a."index" 
+        left join njt g
+        on g."index" = a."index" 
+        left join pavement h
+        on h."index" = a."index" 
+        left join pmvc100 i
+        on i."index" = a."index" 
+        left join pmvc85 j
+        on j."index" = a."index" 
+        left join pti k
+        on k."index" = a."index" 
+        left join tti l
+        on l."index" = a."index" 
+        left join sidewalk_gaps m
+        on m."index" = a."index" 
+    """
+    db.execute(query)
+
+
 if __name__ == "__main__":
     conflation_schema()
 
@@ -250,3 +347,5 @@ if __name__ == "__main__":
         "b.bikefacili",
         5,
     )
+
+    rejoiner()
