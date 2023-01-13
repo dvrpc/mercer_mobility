@@ -202,57 +202,17 @@ def rejoiner():
             h.pci_new, 
             i."volcapra~2" as pmvc100,
             j."volcapra~2" as pmvc85,
-            k.ptiwkd,
-            k.ptiwkd0610,
-            k.ptiwkd1015,
-            k.ptiwkd1519,
-            k.ptiwkd0709,
-            k.ptiwkd1618,
-            k.ptiwkd0006,
-            k.ptiwkd0607,
             k.ptiwkd0708,
             k.ptiwkd0809,
-            k.ptiwkd0910,
-            k.ptiwkd1011,
-            k.ptiwkd1112,
-            k.ptiwkd1213,
-            k.ptiwkd1314,
-            k.ptiwkd1415,
-            k.ptiwkd1516,
             k.ptiwkd1617,
             k.ptiwkd1718,
-            k.ptiwkd1819,
-            k.ptiwkd1920,
-            k.ptiwkd2021,
-            k.ptiwkd2122,
-            k.ptiwkd2223,
-            k.ptiwkd2300,
-            l.ttiwkd,
-            l.ttiwkd0610,
-            l.ttiwkd1015,
-            l.ttiwkd1519,
-            l.ttiwkd0709,
-            l.ttiwkd1618,
-            l.ttiwkd0006,
-            l.ttiwkd0607,
             l.ttiwkd0708,
             l.ttiwkd0809,
-            l.ttiwkd0910,
-            l.ttiwkd1011,
-            l.ttiwkd1112,
-            l.ttiwkd1213,
-            l.ttiwkd1314,
-            l.ttiwkd1415,
-            l.ttiwkd1516,
             l.ttiwkd1617,
             l.ttiwkd1718,
-            l.ttiwkd1819,
-            l.ttiwkd1920,
-            l.ttiwkd2021,
-            l.ttiwkd2122,
-            l.ttiwkd2223,
-            l.ttiwkd2300,
-            m.sw_ratio 
+            m.sw_ratio,
+            o."countact~2" as busfreq,
+            o."r_counta~5" as busfreq2
         from public.nj_centerline a
         left join rejoined.amvc100 b 
             on b."index" = a."index" 
@@ -278,6 +238,8 @@ def rejoiner():
             on l."index" = a."index" 
         left join rejoined.sidewalk_gaps m
             on m."index" = a."index" 
+        left join rejoined.bus_freq o
+            on o."index" = a."index"
     """
     db.execute(query)
 
@@ -298,7 +260,7 @@ if __name__ == "__main__":
             f"{i}",
             "uid",
             "nj_centerline",
-            "b.ttiwkd,b.ttiwkd0610,b.ttiwkd1015,b.ttiwkd1519,b.ttiwkd0709,b.ttiwkd1618,b.ttiwkd0006,b.ttiwkd0607,b.ttiwkd0708,b.ttiwkd0809,b.ttiwkd0910,b.ttiwkd1011,b.ttiwkd1112,b.ttiwkd1213,b.ttiwkd1314,b.ttiwkd1415,b.ttiwkd1516,b.ttiwkd1617,b.ttiwkd1718,b.ttiwkd1819,b.ttiwkd1920,b.ttiwkd2021,b.ttiwkd2122,b.ttiwkd2223,b.ttiwkd2300,b.ptiwkd,b.ptiwkd0610,b.ptiwkd1015,b.ptiwkd1519,b.ptiwkd0709,b.ptiwkd1618,b.ptiwkd0006,b.ptiwkd0607,b.ptiwkd0708,b.ptiwkd0809,b.ptiwkd0910,b.ptiwkd1011,b.ptiwkd1112,b.ptiwkd1213,b.ptiwkd1314,b.ptiwkd1415,b.ptiwkd1516,b.ptiwkd1617,b.ptiwkd1718,b.ptiwkd1819,b.ptiwkd1920,b.ptiwkd2021,b.ptiwkd2122,b.ptiwkd2223,b.ptiwkd2300",
+            "b.ttiwkd0708,b.ttiwkd0809,b.ttiwkd1617,b.ttiwkd1718, b.ptiwkd0708,b.ptiwkd0809, b.ptiwkd1617,b.ptiwkd1718",
             10,
             80,
         )
@@ -353,5 +315,12 @@ if __name__ == "__main__":
         "b.bikefacili",
         5,
     )
+
+    conflator("bus_frequency_link",
+              "bus_freq",
+              "uid",
+              "nj_centerline",
+              'b."countact~2", b."r_counta~5"',
+              5)
 
     rejoiner()

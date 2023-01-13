@@ -125,17 +125,19 @@ def set_thresholds():
     create_threshold_view(
         f"tti_all",
         "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
-        f"ttiwkd",
+        "ttiwkd0708",
         ">=",
         1.2,
+        "or ttiwkd0809 > 1.2 or ttiwkd1617 > 1.2 or ttiwkd1718 > 1.2"
     )
 
     create_threshold_view(
         f"pti_all",
         "dvrpcnj_inrixxdgeo22_1_jointraveltime1min_mercer",
-        f"ptiwkd",
+        f"ptiwkd0708",
         ">=",
         2,
+        "or ptiwkd0809 > 2 or ptiwkd1617 > 2 or ptiwkd1718 > 2"
     )
 
     print("thresholds set")

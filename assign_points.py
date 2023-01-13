@@ -28,13 +28,13 @@ def megajoin():
             group by a.index)
         select 
             a.*, 
-            b.name as bottleneck, 
+            b.inrixxd, 
             c.unofficial_sufficiency_rating as bridge_rating,
             d.vul_crash,
             e.ksi,
             f.lsad_type
         from rejoined.all a
-            left join public.potentialmercercountybottlenecks_v2 b
+            left join public.bottlenecks b
                 on st_within(b.geom, st_buffer(a.geom, 10))
             left join public.bridges_joined c
                 on st_within(c.geom, st_buffer(a.geom, 10))
@@ -77,28 +77,28 @@ def create_point_cols():
 
 def assign_points():
     query = """
-    UPDATE megajoin SET bridge_pts = 1 WHERE bridge_rating between 20 and 50;
-    UPDATE megajoin SET bridge_pts = 2 WHERE bridge_rating <= 20;
-    UPDATE megajoin SET pvmt_pts = 1 WHERE pci_new between 30 and 60;
-    UPDATE megajoin SET pvmt_pts = 2 WHERE pci_new <= 30;
-    UPDATE megajoin SET vul_user_pts = 2 WHERE vul_crash > 0;
-    UPDATE megajoin SET ksi_pts = 2 WHERE ksi > 0;
-    UPDATE megajoin SET crrate_pts = 1 WHERE crrate between 1256 and 2025;
-    UPDATE megajoin SET crrate_pts = 2 WHERE crrate > 2025;
-    UPDATE megajoin SET sidewalk_pts = 1 WHERE sw_ratio between 1 and 50 and lsad_type = 'Urbanized Area';
-    UPDATE megajoin SET sidewalk_pts = 2 WHERE sw_ratio < 1 and lsad_type = 'Urbanized Area';
-    UPDATE megajoin SET sidewalk_pts = 1 WHERE sw_ratio < 1 and lsad_type != 'Urbanized Area';
-    UPDATE megajoin SET missing_bike_fac_pts = 1 WHERE bikefacili = 'Sharrows';
-    UPDATE megajoin SET missing_bike_fac_pts = 2 WHERE bikefacili = 'No Accomodation';
-    UPDATE megajoin SET tti_pts = 1 WHERE ttiwkd1718 >= 1.5 and lsad_type = 'Urbanized Area';
-    UPDATE megajoin SET tti_pts = 1 WHERE ttiwkd1718 between 1.2 and 1.5 and lsad_type != 'Urbanized Area';
-    UPDATE megajoin SET tti_pts = 2 WHERE ttiwkd1718 >= 1.5 and lsad_type != 'Urbanized Area';
-    UPDATE megajoin SET pti_pts = 1 WHERE ptiwkd1718 >= 3 and lsad_type = 'Urbanized Area';
-    UPDATE megajoin SET pti_pts = 1 WHERE ptiwkd1718 between 2 and 3 and lsad_type != 'Urbanized Area';
-    UPDATE megajoin SET pti_pts = 2 WHERE ptiwkd1718 >= 3 and lsad_type != 'Urbanized Area';
-    UPDATE megajoin SET bottleneck_pts = 1 WHERE bottleneck is not null;
-    UPDATE megajoin SET transit_rt_pts = 1 WHERE line is not null;
-    UPDATE megajoin SET transit_rt_pts = 2 WHERE line is not null and tti_pts > 0 or pti_pts > 0;
+    UPDATE point_assignment.megajoin SET bridge_pts = 1 WHERE bridge_rating between 20 and 50;
+    UPDATE point_assignment.megajoin SET bridge_pts = 2 WHERE bridge_rating <= 20;
+    UPDATE point_assignment.megajoin SET pvmt_pts = 1 WHERE pci_new between 30 and 60;
+    UPDATE point_assignment.megajoin SET pvmt_pts = 2 WHERE pci_new <= 30;
+    UPDATE point_assignment.megajoin SET vul_user_pts = 2 WHERE vul_crash > 0;
+    UPDATE point_assignment.megajoin SET ksi_pts = 2 WHERE ksi > 0;
+    UPDATE point_assignment.megajoin SET crrate_pts = 1 WHERE crrate between 1256 and 2025;
+    UPDATE point_assignment.megajoin SET crrate_pts = 2 WHERE crrate > 2025;
+    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio between 1 and 50 and lsad_type = 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET sidewalk_pts = 2 WHERE sw_ratio < 1 and lsad_type = 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio < 1 and lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 1 WHERE bikefacili = 'Sharrows';
+    UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 2 WHERE bikefacili = 'No Accomodation';
+    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5 and lsad_type = 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5 and lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET tti_pts = 2 WHERE ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5 or ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5 and lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3 and lsad_type = 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3 AND lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET pti_pts = 2 WHERE ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3 and lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET bottleneck_pts = 1 WHERE inrixxd=0;
+    UPDATE point_assignment.megajoin SET transit_rt_pts = 1 WHERE line is not null;
+    UPDATE point_assignment.megajoin SET transit_rt_pts = 2 WHERE busfreq >=3 or busfreq2 >=3;  
     drop table if exists point_assignment.total_points;
     create table point_assignment.total_points as 
     select *, bridge_pts + pvmt_pts + vul_user_pts + ksi_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + transit_rt_pts + tti_pts + pti_pts + bottleneck_pts as total from point_assignment.megajoin;
