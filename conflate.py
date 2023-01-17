@@ -316,11 +316,13 @@ if __name__ == "__main__":
         5,
     )
 
-    conflator("bus_frequency_link",
-              "bus_freq",
-              "uid",
-              "nj_centerline",
-              'b."countact~2", b."r_counta~5"',
-              5)
-
+    conflator(
+        "bus_frequency_link",
+        "bus_freq",
+        "uid",
+        "nj_centerline",
+        'b."countact~2", b."r_counta~5"',
+        5,
+        75,
+    )
     rejoiner()
