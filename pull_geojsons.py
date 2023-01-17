@@ -28,7 +28,7 @@ if __name__ == "__main__":
     create_and_export_geojson("sw_ratio", "sidewalk_pts", "sw_ratio < 1")
     create_and_export_geojson("bikefacili", "missing_bike_fac_pts", "bikefacili = 'No Accomodation'")
     create_and_export_geojson("inrixxd", "bottleneck_pts", "inrixxd=0")
-    create_and_export_geojson("line", "transit_rt_pts", "busfreq >= 3 or busfreq2 >=3")
+    create_and_export_geojson("line", "transit_rt_pts", "line is not null")
     create_and_export_geojson("ptiwkd0708, ptiwkd0809, ptiwkd1617, ptiwkd1718", "pti_pts", "ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3")
     create_and_export_geojson("ttiwkd0708, ttiwkd0809, ttiwkd1617, ttiwkd1718", "tti_pts", "ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >=1.5")
     create_and_export_geojson("sri,amvc100,amvc85,crrate,bikefacili,countyrd,line,pci_new,pmvc100,pmvc85,ptiwkd0708,ptiwkd0809,ptiwkd1617,ptiwkd1718,ttiwkd0708,ttiwkd0809,ttiwkd1617,ttiwkd1718,sw_ratio,busfreq,busfreq2,inrixxd,bridge_rating,vul_crash,ksi,lsad_type,bridge_pts,pvmt_pts,vul_user_pts,ksi_pts,crrate_pts,sidewalk_pts,missing_bike_fac_pts,transit_rt_pts,tti_pts,pti_pts,bottleneck_pts,critical", "total", "total >= 0") 
