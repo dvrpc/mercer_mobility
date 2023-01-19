@@ -90,12 +90,12 @@ def assign_points():
     UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio < 1 and lsad_type != 'Urbanized Area';
     UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 1 WHERE bikefacili = 'Sharrows';
     UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 2 WHERE bikefacili = 'No Accomodation';
-    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5 and lsad_type = 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5 and lsad_type != 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET tti_pts = 2 WHERE ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5 or ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5 and lsad_type != 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3 and lsad_type = 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3 AND lsad_type != 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET pti_pts = 2 WHERE ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3 and lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE lsad_type = 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;
+    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE lsad_type != 'Urbanized Area' and ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5;
+    UPDATE point_assignment.megajoin SET tti_pts = 2 WHERE lsad_type != 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;
+    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE lsad_type = 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;
+    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE lsad_type != 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;
+    UPDATE point_assignment.megajoin SET pti_pts = 2 WHERE lsad_type != 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;
     UPDATE point_assignment.megajoin SET bottleneck_pts = 1 WHERE inrixxd=0;
     UPDATE point_assignment.megajoin SET transit_rt_pts = 1 WHERE line is not null;
     UPDATE point_assignment.megajoin SET transit_rt_pts = 2 WHERE busfreq >=3 or busfreq2 >=3;  
