@@ -85,9 +85,9 @@ def assign_points():
     UPDATE point_assignment.megajoin SET ksi_pts = 2 WHERE ksi > 0;
     UPDATE point_assignment.megajoin SET crrate_pts = 1 WHERE crrate between 1256 and 2025;
     UPDATE point_assignment.megajoin SET crrate_pts = 2 WHERE crrate > 2025;
-    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio between 1 and 50 and lsad_type = 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET sidewalk_pts = 2 WHERE sw_ratio < 1 and lsad_type = 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio < 1 and lsad_type != 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio between .01 and .5 and lsad_type = 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET sidewalk_pts = 2 WHERE sw_ratio < .01 and lsad_type = 'Urbanized Area';
+    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio < .01 and lsad_type != 'Urbanized Area';
     UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 1 WHERE bikefacili = 'Sharrows';
     UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 2 WHERE bikefacili = 'No Accomodation';
     UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE lsad_type = 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;
