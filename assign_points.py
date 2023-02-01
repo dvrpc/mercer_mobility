@@ -9,6 +9,7 @@ db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
+scenarios = ['a', 'b1', 'b2', 'c', 'd', 'e']
 
 def megajoin():
     query = """
@@ -45,13 +46,14 @@ def megajoin():
             left join public.uza f
                 on st_within(a.geom, f.geom));
     """
+    print("joining conflated point and line layers")
     db.execute(query)
+    
 
 
 def create_point_cols():
     deficiencies = [
         "bridge",
-        "pvmt",
         "vul_user",
         "ksi",
         "crrate",
@@ -74,13 +76,19 @@ def create_point_cols():
             update point_assignment.megajoin set {column} = 0 where {column} is null;"""
         db.execute(query)
 
+def copy_megajoin(scenarios:list):
+    for scenario in scenarios: 
+        query = f"""drop table if exists point_assignment.scenario_{scenario};
+        create table point_assignment.scenario_{scenario} as(
+        select * from point_assignment.megajoin
+        )"""
+        db.execute(query)
+        print(f"setting up scenario {scenario}")
 
 def assign_points():
     query = """
     UPDATE point_assignment.megajoin SET bridge_pts = 1 WHERE bridge_rating between 20 and 50;
     UPDATE point_assignment.megajoin SET bridge_pts = 2 WHERE bridge_rating <= 20;
-    UPDATE point_assignment.megajoin SET pvmt_pts = 1 WHERE pci_new between 30 and 60;
-    UPDATE point_assignment.megajoin SET pvmt_pts = 2 WHERE pci_new <= 30;
     UPDATE point_assignment.megajoin SET vul_user_pts = 2 WHERE vul_crash > 0;
     UPDATE point_assignment.megajoin SET ksi_pts = 2 WHERE ksi > 0;
     UPDATE point_assignment.megajoin SET crrate_pts = 1 WHERE crrate between 1256 and 2025;
@@ -99,10 +107,9 @@ def assign_points():
     UPDATE point_assignment.megajoin SET bottleneck_pts = 1 WHERE inrixxd=0;
     UPDATE point_assignment.megajoin SET transit_rt_pts = 1 WHERE line is not null;
     UPDATE point_assignment.megajoin SET transit_rt_pts = 2 WHERE busfreq >=3 or busfreq2 >=3;  
-    drop table if exists point_assignment.total_points;
-    create table point_assignment.total_points as 
-    select *, bridge_pts + pvmt_pts + vul_user_pts + ksi_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + transit_rt_pts + tti_pts + pti_pts + bottleneck_pts as total from point_assignment.megajoin;
-    """
+    ALTER TABLE point_assignment.megajoin add column total int;
+    UPDATE point_assignment.megajoin SET total = bridge_pts + vul_user_pts + ksi_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + transit_rt_pts + tti_pts + pti_pts + bottleneck_pts 
+   """
     db.execute(query)
 
 
@@ -116,5 +123,6 @@ def critical_flag():
 if __name__ == "__main__":
     megajoin()
     create_point_cols()
+    copy_megajoin(scenarios)
     assign_points()
-    critical_flag()
+    # critical_flag()
