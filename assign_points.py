@@ -96,10 +96,16 @@ def assign_points(table: str, point_col: str, point: int, where_statement: str):
 
 def critical_flag(table: str):
     query = f"""
-        alter table point_assignment.{table} add column critical int;
+        alter table point_assignment.{table} add column if not exists critical int;
         UPDATE point_assignment.{table } SET critical = 1 WHERE bridge_rating <= 20;"""
     db.execute(query)
 
+def total_points(table:str):
+    query = f"""
+    alter table point_assignment.{table} add column if not exists total int;
+    UPDATE point_assignment.{table} set total = bridge_pts + vul_user_pts + ksi_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + tti_pts + pti_pts + bottleneck_pts + transit_rt_pts;
+    """
+    db.execute(query)
 
 def assign_scenario_a(table: str):
     assign_points(table, "bridge_pts", 1, "bridge_rating between 20 and 50")
@@ -162,10 +168,10 @@ def assign_scenario_a(table: str):
     assign_points(table, "transit_rt_pts", 1, "line is not null;")
     assign_points(table, "transit_rt_pts", 2, "bridge_rating between 20 and 50")
     critical_flag(table)
-
+    total_points(table)
 
 if __name__ == "__main__":
-    megajoin()
-    create_point_cols()
-    copy_megajoin(scenarios)
+    # megajoin()
+    # create_point_cols()
+    # copy_megajoin(scenarios)
     assign_scenario_a("scenario_a")
