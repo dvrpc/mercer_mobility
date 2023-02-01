@@ -9,8 +9,7 @@ db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
-scenarios = ["a", "b1", "b2", "c", "d", "e"]
-
+scenarios = ['a', 'b1', 'b2', 'c', 'd', 'e']
 
 def megajoin():
     query = """
@@ -108,6 +107,8 @@ def total_points(table:str):
     db.execute(query)
 
 def assign_scenario_a(table: str):
+    """scenario a is the "baseline" scenario upon which others are built. """
+
     assign_points(table, "bridge_pts", 1, "bridge_rating between 20 and 50")
     assign_points(table, "bridge_pts", 2, "bridge_rating <= 20")
     assign_points(table, "vul_user_pts", 2, "vul_crash > 0;")
@@ -150,7 +151,7 @@ def assign_scenario_a(table: str):
         table,
         "pti_pts",
         1,
-        "lsad_type != 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;",
+        "lsad_type = 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;",
     )
     assign_points(
         table,
@@ -170,8 +171,17 @@ def assign_scenario_a(table: str):
     critical_flag(table)
     total_points(table)
 
+def assign_scenario_b1(table:str):
+    # scenario a is "baseline" for all others, so generate the same points for it, then only update what's necessary 
+    assign_scenario_a(table) 
+    assign_points(table, "tti_pts", 1, "lsad_type = 'Urbanized Area' and ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5;")
+    assign_points(table, "tti_pts", 2, "lsad_type = 'Urbanized Area' and ttiwkd0708 >1.5 or ttiwkd0809 >1.5 or ttiwkd1617 >1.5 or ttiwkd1718 >1.5;") 
+    assign_points(table, "pti_pts", 1, "lsad_type = 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;")
+    assign_points(table, "pti_pts", 2, "lsad_type = 'Urbanized Area' and ptiwkd0708 >3 or ptiwkd0809 >3 or ptiwkd1617 >3 or ptiwkd1718 >3;")
+
 if __name__ == "__main__":
-    # megajoin()
-    # create_point_cols()
-    # copy_megajoin(scenarios)
+    megajoin()
+    create_point_cols()
+    copy_megajoin(scenarios)
     assign_scenario_a("scenario_a")
+    assign_scenario_b1("scenario_b1")
