@@ -128,7 +128,7 @@ def set_thresholds():
         "ttiwkd0708",
         ">=",
         1.2,
-        "or ttiwkd0809 > 1.2 or ttiwkd1617 > 1.2 or ttiwkd1718 > 1.2"
+        "or ttiwkd0809 > 1.2 or ttiwkd1617 > 1.2 or ttiwkd1718 > 1.2",
     )
 
     create_threshold_view(
@@ -137,7 +137,7 @@ def set_thresholds():
         f"ptiwkd0708",
         ">=",
         2,
-        "or ptiwkd0809 > 2 or ptiwkd1617 > 2 or ptiwkd1718 > 2"
+        "or ptiwkd0809 > 2 or ptiwkd1617 > 2 or ptiwkd1718 > 2",
     )
 
     print("thresholds set")

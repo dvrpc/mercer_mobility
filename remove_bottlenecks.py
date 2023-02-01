@@ -9,6 +9,7 @@ db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
+
 def remove_bottlenecks():
     query = """
         drop table if exists point_assignment.no_bottlenecks;
@@ -16,8 +17,9 @@ def remove_bottlenecks():
 	        select * from point_assignment.total_points;
         update point_assignment.no_bottlenecks
         set total = total - bottleneck_pts;
-    """ 
+    """
     db.execute(query)
+
 
 if __name__ == "__main__":
     remove_bottlenecks()
