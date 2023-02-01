@@ -85,44 +85,46 @@ def copy_megajoin(scenarios:list):
         db.execute(query)
         print(f"setting up scenario {scenario}")
 
-def assign_points():
-    query = """
-    UPDATE point_assignment.megajoin SET bridge_pts = 1 WHERE bridge_rating between 20 and 50;
-    UPDATE point_assignment.megajoin SET bridge_pts = 2 WHERE bridge_rating <= 20;
-    UPDATE point_assignment.megajoin SET vul_user_pts = 2 WHERE vul_crash > 0;
-    UPDATE point_assignment.megajoin SET ksi_pts = 2 WHERE ksi > 0;
-    UPDATE point_assignment.megajoin SET crrate_pts = 1 WHERE crrate between 1256 and 2025;
-    UPDATE point_assignment.megajoin SET crrate_pts = 2 WHERE crrate > 2025;
-    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio between .01 and .5 and lsad_type = 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET sidewalk_pts = 2 WHERE sw_ratio < .01 and lsad_type = 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET sidewalk_pts = 1 WHERE sw_ratio < .01 and lsad_type != 'Urbanized Area';
-    UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 1 WHERE bikefacili = 'Sharrows';
-    UPDATE point_assignment.megajoin SET missing_bike_fac_pts = 2 WHERE bikefacili = 'No Accomodation';
-    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE lsad_type = 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;
-    UPDATE point_assignment.megajoin SET tti_pts = 1 WHERE lsad_type != 'Urbanized Area' and ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5;
-    UPDATE point_assignment.megajoin SET tti_pts = 2 WHERE lsad_type != 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;
-    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE lsad_type = 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;
-    UPDATE point_assignment.megajoin SET pti_pts = 1 WHERE lsad_type != 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;
-    UPDATE point_assignment.megajoin SET pti_pts = 2 WHERE lsad_type != 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;
-    UPDATE point_assignment.megajoin SET bottleneck_pts = 1 WHERE inrixxd=0;
-    UPDATE point_assignment.megajoin SET transit_rt_pts = 1 WHERE line is not null;
-    UPDATE point_assignment.megajoin SET transit_rt_pts = 2 WHERE busfreq >=3 or busfreq2 >=3;  
-    ALTER TABLE point_assignment.megajoin add column total int;
-    UPDATE point_assignment.megajoin SET total = bridge_pts + vul_user_pts + ksi_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + transit_rt_pts + tti_pts + pti_pts + bottleneck_pts 
-   """
+
+def assign_points(table:str, point_col:str, point:int, where_statement:str):
+    query = f"""
+    UPDATE point_assignment.{table} SET {point_col} = {point} WHERE {where_statement}
+    """
+    db.execute(query)
+ 
+
+def critical_flag(table:str):
+    query = f"""
+        alter table point_assignment.{table} add column critical int;
+        UPDATE point_assignment.{table } SET critical = 1 WHERE bridge_rating <= 20;"""
     db.execute(query)
 
-
-def critical_flag():
-    query = """
-        alter table point_assignment.total_points add column critical int;
-        UPDATE point_assignment.total_points SET critical = 1 WHERE bridge_rating <= 20;"""
-    db.execute(query)
-
+   
+def assign_scenario_a(table:str):
+    assign_points(table, "bridge_pts", 1, "bridge_rating between 20 and 50") 
+    assign_points(table, "bridge_pts", 2, "bridge_rating <= 20")
+    assign_points(table, "vul_user_pts", 2, "vul_crash > 0;") 
+    assign_points(table, "ksi_pts", 2, "ksi > 0;") 
+    assign_points(table, "crrate_pts", 1, "crrate between 1256 and 2025;") 
+    assign_points(table, "crrate_pts", 2, "crrate > 2025;") 
+    assign_points(table, "sidewalk_pts", 1, "sw_ratio between .01 and .5 and lsad_type = 'Urbanized Area';") 
+    assign_points(table, "sidewalk_pts", 2, "sw_ratio < .01 and lsad_type = 'Urbanized Area';") 
+    assign_points(table, "sidewalk_pts", 1, "sw_ratio < .01 and lsad_type != 'Urbanized Area';") 
+    assign_points(table, "missing_bike_fac_pts", 1, "bikefacili = 'Sharrows'") 
+    assign_points(table, "missing_bike_fac_pts", 2, "bikefacili = 'No Accomodation';") 
+    assign_points(table, "tti_pts", 1, "lsad_type = 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;") 
+    assign_points(table, "tti_pts", 1, "lsad_type != 'Urbanized Area' and ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5;") 
+    assign_points(table, "tti_pts", 2, "lsad_type != 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;") 
+    assign_points(table, "pti_pts", 1, "lsad_type != 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;") 
+    assign_points(table, "pti_pts", 1, "lsad_type != 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;") 
+    assign_points(table, "pti_pts", 2, "lsad_type != 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;") 
+    assign_points(table, "bottleneck_pts", 1, "inrixxd=0;") 
+    assign_points(table, "transit_rt_pts", 1, "line is not null;") 
+    assign_points(table, "transit_rt_pts", 2, "bridge_rating between 20 and 50") 
+    critical_flag(table)
 
 if __name__ == "__main__":
     megajoin()
     create_point_cols()
     copy_megajoin(scenarios)
-    assign_points()
-    # critical_flag()
+    assign_scenario_a("scenario_a")
