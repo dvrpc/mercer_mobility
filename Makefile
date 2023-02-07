@@ -11,7 +11,7 @@ dataimport:
 conflate:
 	@echo "conflating all networks to base layer"
 	python conflate.py
-	python assign_points.py
+	python assign_pts.py
 	python pull_geojsons.py
 
 all: setup dataimport conflate 

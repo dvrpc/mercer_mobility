@@ -182,6 +182,7 @@ def conflator(
             inner join public.{input_table} b
             on a.{output_table}_id = b.uid
             where a.possible_coverage > {coverage_threshold}"""
+    print(f"conflating {input_table} to {base_layer}")
     db.execute(query)
 
 
@@ -196,23 +197,24 @@ def rejoiner():
             b."volcapra~2" as amvc100, 
             c."volcapra~2" as amvc85, 
             d.crrate, 
+            d.ksicrrate,
+            d.vulcrrate,
             e.bikefacili, 
             f."type" as countyrd, 
             g.line, 
-            h.pci_new, 
-            i."volcapra~2" as pmvc100,
-            j."volcapra~2" as pmvc85,
-            k.ptiwkd0708,
-            k.ptiwkd0809,
-            k.ptiwkd1617,
-            k.ptiwkd1718,
-            l.ttiwkd0708,
-            l.ttiwkd0809,
-            l.ttiwkd1617,
-            l.ttiwkd1718,
-            m.sw_ratio,
-            o."countact~2" as busfreq,
-            o."r_counta~5" as busfreq2
+            h."volcapra~2" as pmvc100,
+            i."volcapra~2" as pmvc85,
+            j.ptiwkd0708,
+            j.ptiwkd0809,
+            j.ptiwkd1617,
+            j.ptiwkd1718,
+            k.ttiwkd0708,
+            k.ttiwkd0809,
+            k.ttiwkd1617,
+            k.ttiwkd1718,
+            l.sw_ratio,
+            m."countact~2" as busfreq,
+            m."r_counta~5" as busfreq2
         from public.nj_centerline a
         left join rejoined.amvc100 b 
             on b."index" = a."index" 
@@ -226,20 +228,18 @@ def rejoiner():
             on f."index" = a."index" 
         left join rejoined.njt g
             on g."index" = a."index" 
-        left join rejoined.pavement h
+        left join rejoined.pmvc100 h 
             on h."index" = a."index" 
-        left join rejoined.pmvc100 i
+        left join rejoined.pmvc85 i 
             on i."index" = a."index" 
-        left join rejoined.pmvc85 j
+        left join rejoined.pti j 
             on j."index" = a."index" 
-        left join rejoined.pti k
+        left join rejoined.tti k 
             on k."index" = a."index" 
-        left join rejoined.tti l
+        left join rejoined.sidewalk_gaps l 
             on l."index" = a."index" 
-        left join rejoined.sidewalk_gaps m
-            on m."index" = a."index" 
-        left join rejoined.bus_freq o
-            on o."index" = a."index"
+        left join rejoined.bus_freq m 
+            on m."index" = a."index"
     """
     db.execute(query)
 
@@ -279,18 +279,13 @@ if __name__ == "__main__":
         75,
     )
 
-    # pavement condition, possible coverage >= 75
-    conflator(
-        "pavement_evaluation", "pavement", "uid", "nj_centerline", "b.pci_new", 5, 75
-    )
-
     # crash segments, possible coverage >= 75
     conflator(
         "crash_statistics_by_segment_mc",
         "crash_seg",
         "uid",
         "nj_centerline",
-        "b.crrate",
+        "b.crrate, b.ksicrrate, ((b.pedestrian + b.pedalcycli)*100000000)/(365*5*(b.endmilepo-b.startmilep)*b.average_da) as vulcrrate",
         5,
         75,
     )

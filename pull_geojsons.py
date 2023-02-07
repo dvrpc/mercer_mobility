@@ -2,7 +2,6 @@ from pg_data_etl import Database
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-import geopandas as gpd
 
 load_dotenv()
 
@@ -14,7 +13,7 @@ data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 def create_and_export_geojson(column: str, points_column: str, where_statement: str):
     query = f"""
         select {column}, {points_column}, geom
-        from point_assignment.total_points
+        from point_assignment.scenario_a
         where {where_statement} 
     """
     gdf = db.gdf(query)
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     create_and_export_geojson("vul_crash", "vul_user_pts", "vul_crash > 0")
     create_and_export_geojson("ksi", "ksi_pts", "ksi > 0")
     create_and_export_geojson("crrate", "crrate_pts", "crrate > 1256")
-    create_and_export_geojson("sw_ratio", "sidewalk_pts", "sw_ratio > 0")
+    create_and_export_geojson("sw_ratio", "sidewalk_pts", "sw_ratio >= 0")
     create_and_export_geojson(
         "bikefacili", "missing_bike_fac_pts", "bikefacili = 'No Accomodation'"
     )

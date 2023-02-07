@@ -197,7 +197,6 @@ if __name__ == "__main__":
     import_shapefile("ModelVolumes", "model_vols")
     import_shapefile("JobAccess", clip=False)
     import_shapefile("NJDOT2021_ADT")
-    import_shapefile("Pavement Condition/Pavement Condition Index")
     import_shapefile("TravelTimes")
     import_shapefile("MercerCountyRoads")
     import_shapefile("MercerBikeFacilities")
