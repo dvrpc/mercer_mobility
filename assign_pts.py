@@ -9,7 +9,7 @@ db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
-scenarios = ["a", "b1", "b2", "c", "d", "e"]
+scenarios = ["a", "b1", "b2", "c", "d", "e", "matts"]
 
 
 def megajoin():
@@ -17,45 +17,24 @@ def megajoin():
     drop schema if exists point_assignment CASCADE;
     create schema point_assignment;
     create table point_assignment.megajoin as (
-        with 
-        vul_crashes as(
-            select a."index" , count(b.geom) as vul_crash from rejoined."all" a 
-            inner join public.view_vulnerable_user_crashes b
-            on st_within(b.geom, st_buffer(a.geom, 10))
-            group by a.index),
-        ksi as (
-            select a."index" , count(b.geom) as ksi from rejoined."all" a 
-            inner join public.view_ksi b
-            on st_within(b.geom, st_buffer(a.geom, 10))
-            group by a.index)
         select 
             a.*, 
             b.inrixxd, 
-            c.unofficial_sufficiency_rating as bridge_rating,
-            d.vul_crash,
-            e.ksi,
-            f.lsad_type
+            c.lsad_type
         from rejoined.all a
             left join public.bottlenecks b
                 on st_within(b.geom, st_buffer(a.geom, 10))
-            left join public.bridges_joined c
-                on st_within(c.geom, st_buffer(a.geom, 10))
-            left join vul_crashes d
-                on a."index" = d."index" 
-            left join ksi e
-                on a."index" = e."index"
-            left join public.uza f
-                on st_within(a.geom, f.geom));
+            left join public.uza c 
+                on st_within(a.geom, c.geom));
     """
-    print("joining conflated point and line layers")
+    print("creating base scenario")
     db.execute(query)
 
 
 def create_point_cols():
     deficiencies = [
-        "bridge",
-        "vul_user",
-        "ksi",
+        "vulusercrrate",
+        "ksicrrate",
         "crrate",
         "sidewalk",
         "missing_bike_fac",
@@ -94,30 +73,55 @@ def assign_points(table: str, point_col: str, point: int, where_statement: str):
     db.execute(query)
 
 
-def critical_flag(table: str):
-    query = f"""
-        alter table point_assignment.{table} add column if not exists critical int;
-        UPDATE point_assignment.{table } SET critical = 1 WHERE bridge_rating <= 20;"""
-    db.execute(query)
-
-
 def total_points(table: str):
     query = f"""
     alter table point_assignment.{table} add column if not exists total int;
-    UPDATE point_assignment.{table} set total = bridge_pts + vul_user_pts + ksi_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + tti_pts + pti_pts + bottleneck_pts + transit_rt_pts;
+    UPDATE point_assignment.{table} set total = vulusercrrate_pts + ksicrrate_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + tti_pts + pti_pts + bottleneck_pts + transit_rt_pts;
     """
     db.execute(query)
 
 
-def assign_scenario_a(table: str):
-    """scenario a is the "baseline" scenario upon which others are built."""
+def avg_and_sd(column: str, table: str):
+    """returns average and sd, calculated in pg"""
+    avg = db.query_as_singleton(f"select avg({column}) from point_assignment.{table}")
+    sd = db.query_as_singleton(f"select stddev({column}) from point_assignment.{table}")
+    return [avg, sd]
 
-    assign_points(table, "bridge_pts", 1, "bridge_rating between 20 and 50")
-    assign_points(table, "bridge_pts", 2, "bridge_rating <= 20")
-    assign_points(table, "vul_user_pts", 2, "vul_crash > 0;")
-    assign_points(table, "ksi_pts", 2, "ksi > 0;")
-    assign_points(table, "crrate_pts", 1, "crrate between 1256 and 2025;")
-    assign_points(table, "crrate_pts", 2, "crrate > 2025;")
+
+def assign_scenario_a(table: str):
+    """scenario a is the "baseline" scenario upon which others are built.
+
+    calculates the average and standard deviations of each column then updates score where crashes between .5 and 1.5 sd, and also where they're > 1.5 sd
+    """
+
+    vcr = avg_and_sd("vulcrrate", table)
+    ksicr = avg_and_sd("ksicrrate", table)
+    cr = avg_and_sd("crrate", table)
+    assign_points(
+        table,
+        "vulusercrrate_pts",
+        1,
+        f"vulcrrate between {vcr[0] + .5*vcr[1]} and {vcr[0] + 1.5 * vcr[1]};",
+    )
+    assign_points(
+        table, "vulusercrrate_pts", 2, f"vulcrrate > {vcr[0] + 1.5 * vcr[1]};"
+    )
+    assign_points(
+        table,
+        "ksicrrate_pts",
+        1,
+        f"ksicrrate between {ksicr[0] + .5*ksicr[1]} and {ksicr[0] + 1.5 * ksicr[1]};",
+    )
+    assign_points(
+        table, "ksicrrate_pts", 2, f"ksicrrate > {ksicr[0] + 1.5 * ksicr[1]};"
+    )
+    assign_points(
+        table,
+        "crrate_pts",
+        1,
+        f"crrate between {cr[0] + .5*cr[1]} and {cr[0] + 1.5 * cr[1]};",
+    )
+    assign_points(table, "crrate_pts", 2, f"crrate > ({cr[0] + 1.5 * cr[1]});")
     assign_points(
         table,
         "sidewalk_pts",
@@ -170,9 +174,13 @@ def assign_scenario_a(table: str):
     )
     assign_points(table, "bottleneck_pts", 1, "inrixxd=0;")
     assign_points(table, "transit_rt_pts", 1, "line is not null;")
-    assign_points(table, "transit_rt_pts", 2, "bridge_rating between 20 and 50")
-    critical_flag(table)
+    assign_points(table, "transit_rt_pts", 2, "busfreq >=3 or busfreq2 >=3")
     total_points(table)
+
+
+def assign_scenario_matts(table: str):
+    assign_scenario_a(table)
+    assign_points(table, "bottleneck_pts", 2, "inrixxd!=0;")
 
 
 def assign_scenario_b1(table: str):
@@ -210,3 +218,4 @@ if __name__ == "__main__":
     copy_megajoin(scenarios)
     assign_scenario_a("scenario_a")
     assign_scenario_b1("scenario_b1")
+    assign_scenario_matts("scenario_matts")

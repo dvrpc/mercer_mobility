@@ -182,6 +182,7 @@ def conflator(
             inner join public.{input_table} b
             on a.{output_table}_id = b.uid
             where a.possible_coverage > {coverage_threshold}"""
+    print(f"conflating {input_table} to {base_layer}")
     db.execute(query)
 
 
@@ -196,6 +197,8 @@ def rejoiner():
             b."volcapra~2" as amvc100, 
             c."volcapra~2" as amvc85, 
             d.crrate, 
+            d.ksicrrate,
+            d.vulcrrate,
             e.bikefacili, 
             f."type" as countyrd, 
             g.line, 
@@ -282,7 +285,7 @@ if __name__ == "__main__":
         "crash_seg",
         "uid",
         "nj_centerline",
-        "b.crrate",
+        "b.crrate, b.ksicrrate, ((b.pedestrian + b.pedalcycli)*100000000)/(365*5*(b.endmilepo-b.startmilep)*b.average_da) as vulcrrate",
         5,
         75,
     )
