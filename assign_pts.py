@@ -181,7 +181,7 @@ def assign_scenario_a(table: str):
 def assign_scenario_matts(table: str):
     assign_scenario_a(table)
     assign_points(table, "bottleneck_pts", 2, "inrixxd!=0;")
-
+    total_points(table)
 
 def assign_scenario_b1(table: str):
     # scenario a is "baseline" for all others, so generate the same points for it, then only update what's necessary
@@ -210,6 +210,7 @@ def assign_scenario_b1(table: str):
         2,
         "lsad_type = 'Urbanized Area' and ptiwkd0708 >3 or ptiwkd0809 >3 or ptiwkd1617 >3 or ptiwkd1718 >3;",
     )
+    total_points(table)
 
 
 if __name__ == "__main__":
