@@ -1,13 +1,9 @@
 from pg_data_etl import Database
-import os
 from dotenv import load_dotenv
-from pathlib import Path
 
 load_dotenv()
 
 db = Database.from_config("mercer", "omad")
-gis_db = Database.from_config("gis", "gis")
-data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
 scenarios = ["a", "b1", "b2", "c", "d", "e", "matts"]
 
