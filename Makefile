@@ -12,7 +12,10 @@ conflate:
 	@echo "conflating all networks to base layer"
 	python conflate.py
 	python assign_pts.py
-	python pull_geojsons.py
 
-all: setup dataimport conflate 
+export_geojson:
+	@echo "exporting geojson"
+	python pull_geojson.py
+
+all: setup dataimport conflate export_geojson 
 	@echo "running all necessary scripts"
