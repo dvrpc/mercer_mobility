@@ -91,7 +91,8 @@ def avg_and_sd(column: str, table: str):
 def assign_scenario_a(table: str):
     """scenario a is the "baseline" scenario upon which others are built.
 
-    calculates the average and standard deviations of each column then updates score where crashes between .5 and 1.5 sd, and also where they're > 1.5 sd
+    calculates the average and standard deviations of each column then updates score where crashes between .5 and 1.5 sd, and also where they're > 1.5 sd.
+    also assigns points in accordance with scenario a deficiency threshold table
     """
 
     vcr = avg_and_sd("vulcrrate", table)
@@ -132,7 +133,7 @@ def assign_scenario_a(table: str):
         table, "sidewalk_pts", 2, "sw_ratio < .01 and lsad_type = 'Urbanized Area';"
     )
     assign_points(
-        table, "sidewalk_pts", 1, "sw_ratio < .01 and lsad_type != 'Urbanized Area';"
+        table, "sidewalk_pts", 1, "sw_ratio < .01 and lsad_type is null;"
     )
     assign_points(table, "missing_bike_fac_pts", 1, "bikefacili = 'Sharrows'")
     assign_points(table, "missing_bike_fac_pts", 2, "bikefacili = 'No Accomodation';")
@@ -140,37 +141,37 @@ def assign_scenario_a(table: str):
         table,
         "tti_pts",
         1,
-        "lsad_type = 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;",
+        "(lsad_type = 'Urbanized Area') and (ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5);",
     )
     assign_points(
         table,
         "tti_pts",
         1,
-        "lsad_type != 'Urbanized Area' and ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5;",
+        "(lsad_type is null) and (ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5);",
     )
     assign_points(
         table,
         "tti_pts",
         2,
-        "lsad_type != 'Urbanized Area' and ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5;",
+        "(lsad_type is null) and (ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5);",
     )
     assign_points(
         table,
         "pti_pts",
         1,
-        "lsad_type = 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;",
+        "(lsad_type = 'Urbanized Area') and (ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3);",
     )
     assign_points(
         table,
         "pti_pts",
         1,
-        "lsad_type != 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;",
+        "(lsad_type is null) and (ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3);",
     )
     assign_points(
         table,
         "pti_pts",
         2,
-        "lsad_type != 'Urbanized Area' and ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3;",
+        "(lsad_type is null) and (ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3);",
     )
     assign_points(table, "bottleneck_pts", 1, "inrixxd=0;")
     assign_points(table, "transit_rt_pts", 1, "line is not null;")
@@ -190,25 +191,25 @@ def assign_scenario_b1(table: str):
         table,
         "tti_pts",
         1,
-        "lsad_type = 'Urbanized Area' and ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5;",
+        "(lsad_type = 'Urbanized Area') and (ttiwkd0708 between 1.2 and 1.5 or ttiwkd0809 between 1.2 and 1.5 or ttiwkd1617 between 1.2 and 1.5 or ttiwkd1718 between 1.2 and 1.5);",
     )
     assign_points(
         table,
         "tti_pts",
         2,
-        "lsad_type = 'Urbanized Area' and ttiwkd0708 >1.5 or ttiwkd0809 >1.5 or ttiwkd1617 >1.5 or ttiwkd1718 >1.5;",
+        "(lsad_type = 'Urbanized Area') and (ttiwkd0708 >1.5 or ttiwkd0809 >1.5 or ttiwkd1617 >1.5 or ttiwkd1718 >1.5);",
     )
     assign_points(
         table,
         "pti_pts",
         1,
-        "lsad_type = 'Urbanized Area' and ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3;",
+        "(lsad_type = 'Urbanized Area') and (ptiwkd0708 between 2 and 3 or ptiwkd0809 between 2 and 3 or ptiwkd1617 between 2 and 3 or ptiwkd1718 between 2 and 3);",
     )
     assign_points(
         table,
         "pti_pts",
         2,
-        "lsad_type = 'Urbanized Area' and ptiwkd0708 >3 or ptiwkd0809 >3 or ptiwkd1617 >3 or ptiwkd1718 >3;",
+        "(lsad_type = 'Urbanized Area') and (ptiwkd0708 >3 or ptiwkd0809 >3 or ptiwkd1617 >3 or ptiwkd1718 >3);",
     )
     total_points(table)
 
