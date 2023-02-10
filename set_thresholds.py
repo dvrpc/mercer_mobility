@@ -70,4 +70,3 @@ def set_thresholds():
 
 
 set_thresholds()
-

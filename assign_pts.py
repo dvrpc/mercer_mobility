@@ -1,7 +1,9 @@
 from pg_data_etl import Database
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
+api_key = os.getenv("api_key")
 
 db = Database.from_config("mercer", "omad")
 
@@ -128,9 +130,7 @@ def assign_scenario_a(table: str):
     assign_points(
         table, "sidewalk_pts", 2, "sw_ratio < .01 and lsad_type = 'Urbanized Area';"
     )
-    assign_points(
-        table, "sidewalk_pts", 1, "sw_ratio < .01 and lsad_type is null;"
-    )
+    assign_points(table, "sidewalk_pts", 1, "sw_ratio < .01 and lsad_type is null;")
     assign_points(table, "missing_bike_fac_pts", 1, "bikefacili = 'Sharrows'")
     assign_points(table, "missing_bike_fac_pts", 2, "bikefacili = 'No Accomodation';")
     assign_points(
@@ -180,6 +180,7 @@ def assign_scenario_matts(table: str):
     assign_points(table, "bottleneck_pts", 2, "inrixxd!=0;")
     total_points(table)
 
+
 def assign_scenario_b1(table: str):
     # scenario a is "baseline" for all others, so generate the same points for it, then only update what's necessary
     assign_scenario_a(table)
@@ -210,6 +211,10 @@ def assign_scenario_b1(table: str):
     total_points(table)
 
 
+def assign_scenario_c(table: str):
+    pass
+
+
 if __name__ == "__main__":
     megajoin()
     create_point_cols()
@@ -217,3 +222,4 @@ if __name__ == "__main__":
     assign_scenario_a("scenario_a")
     assign_scenario_b1("scenario_b1")
     assign_scenario_matts("scenario_matts")
+    print(assign_scenario_c("scenario_c"))
