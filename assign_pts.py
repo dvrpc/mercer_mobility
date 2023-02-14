@@ -213,9 +213,9 @@ def assign_scenario_b1(table: str):
 
 
 def assign_scenario_c(table: str):
-    """Assigns points for SC. 
+    """Assigns points for SC.
 
-    Scenario C is pretty different than A; copying A and tweaking would've resulted in some errors (e.g., places where 2 points were assigned that weren't 
+    Scenario C is pretty different than A; copying A and tweaking would've resulted in some errors (e.g., places where 2 points were assigned that weren't
     high priority would still show up as 2 points) so each column is verbosely rewritten here. Might be a better way to DRY here.
     """
 
@@ -229,7 +229,10 @@ def assign_scenario_c(table: str):
         f"vulcrrate between {vcr[0] + .5*vcr[1]} and {vcr[0] + 1.5 * vcr[1]};",
     )
     assign_points(
-        table, "vulusercrrate_pts", 2, f"(vulcrrate > {vcr[0] + 1.5 * vcr[1]}) and high_priority = true;"
+        table,
+        "vulusercrrate_pts",
+        2,
+        f"(vulcrrate > {vcr[0] + 1.5 * vcr[1]}) and high_priority = true;",
     )
     assign_points(
         table,
@@ -238,7 +241,10 @@ def assign_scenario_c(table: str):
         f"ksicrrate between {ksicr[0] + .5*ksicr[1]} and {ksicr[0] + 1.5 * ksicr[1]};",
     )
     assign_points(
-        table, "ksicrrate_pts", 2, f"(ksicrrate > {ksicr[0] + 1.5 * ksicr[1]}) and high_priority = true;"
+        table,
+        "ksicrrate_pts",
+        2,
+        f"(ksicrrate > {ksicr[0] + 1.5 * ksicr[1]}) and high_priority = true;",
     )
     assign_points(
         table,
@@ -246,18 +252,31 @@ def assign_scenario_c(table: str):
         1,
         f"crrate between {cr[0] + .5*cr[1]} and {cr[0] + 1.5 * cr[1]};",
     )
-    assign_points(table, "crrate_pts", 2, f"(crrate > ({cr[0] + 1.5 * cr[1]})) and high_priority = true;")
+    assign_points(
+        table,
+        "crrate_pts",
+        2,
+        f"(crrate > ({cr[0] + 1.5 * cr[1]})) and high_priority = true;",
+    )
     assign_points(
         table,
         "sidewalk_pts",
         1,
         "sw_ratio between 0 and .5 and high_priority = false;",
     )
+    assign_points(table, "sidewalk_pts", 2, "sw_ratio < .01 and high_priority = true;")
     assign_points(
-        table, "sidewalk_pts", 2, "sw_ratio < .01 and high_priority = true;"
+        table,
+        "missing_bike_fac_pts",
+        1,
+        "bikefacili = 'No Accomodation' and high_priority = false",
     )
-    assign_points(table, "missing_bike_fac_pts", 1, "bikefacili = 'No Accomodation' and high_priority = false")
-    assign_points(table, "missing_bike_fac_pts", 2, "bikefacili = 'No Accomodation' and high_priority = true;")
+    assign_points(
+        table,
+        "missing_bike_fac_pts",
+        2,
+        "bikefacili = 'No Accomodation' and high_priority = true;",
+    )
     assign_points(
         table,
         "tti_pts",
@@ -286,9 +305,20 @@ def assign_scenario_c(table: str):
 
     assign_points(table, "bottleneck_pts", 1, "inrixxd=0 and high_priority = false;")
     assign_points(table, "bottleneck_pts", 2, "inrixxd=0 and high_priority = true;")
-    assign_points(table, "transit_rt_pts", 1, "(busfreq >=3 or busfreq2 >=3) and high_priority = false;")
-    assign_points(table, "transit_rt_pts", 2, "(busfreq >=3 or busfreq2 >=3) and high_priority = true")
+    assign_points(
+        table,
+        "transit_rt_pts",
+        1,
+        "(busfreq >=3 or busfreq2 >=3) and high_priority = false;",
+    )
+    assign_points(
+        table,
+        "transit_rt_pts",
+        2,
+        "(busfreq >=3 or busfreq2 >=3) and high_priority = true",
+    )
     total_points(table)
+
 
 if __name__ == "__main__":
     megajoin()
@@ -298,4 +328,3 @@ if __name__ == "__main__":
     assign_scenario_b1("scenario_b1")
     assign_scenario_c("scenario_c")
     assign_scenario_matts("scenario_matts")
-    
