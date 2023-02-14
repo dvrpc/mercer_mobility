@@ -225,6 +225,7 @@ def assign_scenario_b2(table):
     assign_points(table, "vc_pts", 2, "(pmvc100 >= 125 or amvc100 >=125) and lsad_type is null")
     assign_points(table, "bottleneck_pts", 1, "ampmvoldel between 15309 and 34138")
     assign_points(table, "bottleneck_pts", 2, "ampmvoldel >= 34138")
+    total_points(table)
 
 def assign_scenario_c(table: str):
     """Assigns points for SC.
