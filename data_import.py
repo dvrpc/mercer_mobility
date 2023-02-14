@@ -276,6 +276,7 @@ if __name__ == "__main__":
     import_shapefile("MercerCountyRoads")
     import_shapefile("MercerBikeFacilities")
     import_shapefile("CrashSegment")
-    import_shapefile("Bottlenecks")  # this is a shapefile that tom made
+    import_shapefile("Bottlenecks")
+    import_shapefile("vehvoldelay")# this is a shapefile that tom made
     import_shapefile("TransitFreq")
     create_high_priority_geometry()
