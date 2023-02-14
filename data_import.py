@@ -173,7 +173,7 @@ def create_high_priority_geometry():
         (SELECT geom FROM bus_buffers), 
        (SELECT geom FROM rail_buffers), 
        (SELECT geom FROM essentialbuffers), 
-        (SELECT geom FROM recreationbuffer )]); 
+        (SELECT geom FROM recreationbuffer )]) as geom; 
     """
     db.execute(query)
 
