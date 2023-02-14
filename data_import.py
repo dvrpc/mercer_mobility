@@ -144,7 +144,8 @@ def create_high_priority_geometry():
         on concat(a.state, a.county, a.tract) = b.geoid 
         left join job_density c 
         on st_within(b.geom, c.geom);
-    create or replace view above_sds as 
+    drop table if exists above_sds;
+    create table above_sds as
     select * from density
     where pop_density > (select stddev(pop_density) + avg(pop_density) from density)
     or zero_car_density > (select stddev(zero_car_density) + avg(zero_car_density) from density)
