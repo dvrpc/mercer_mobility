@@ -62,7 +62,7 @@ def copy_megajoin(scenarios: list):
         query = f"""
         drop table if exists point_assignment.scenario_{scenario};
         create table point_assignment.scenario_{scenario} as(
-        select a.*, st_within(a.geom, b.geom) as high_priority from point_assignment.megajoin a, public.high_priority b
+        select a.*, st_within(a.geom, b.geom) as high_priority from point_assignment.megajoin a, public.above_sds b
         )"""
         db.execute(query)
         print(f"setting up scenario {scenario}")
