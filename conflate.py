@@ -214,7 +214,8 @@ def rejoiner():
             k.ttiwkd1718,
             l.sw_ratio,
             m."countact~2" as busfreq,
-            m."r_counta~5" as busfreq2
+            m."r_counta~5" as busfreq2,
+            n.ampmvoldel
         from public.nj_centerline a
         left join rejoined.amvc100 b 
             on b."index" = a."index" 
@@ -240,6 +241,8 @@ def rejoiner():
             on l."index" = a."index" 
         left join rejoined.bus_freq m 
             on m."index" = a."index"
+        left join rejoined.vehvoldelaymercer n
+            on n."index" = a."index"
     """
     db.execute(query)
 
@@ -320,4 +323,6 @@ if __name__ == "__main__":
         5,
         75,
     )
+    conflator("v4vehdelmercer", "vehvoldelaymercer", "uid", "nj_centerline", "b.ampmvoldel")
+
     rejoiner()

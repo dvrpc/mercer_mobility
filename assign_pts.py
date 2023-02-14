@@ -18,9 +18,10 @@ def megajoin():
         select 
             a.*, 
             b.inrixxd, 
+            b.ampmvoldel as bottleneckdelay,
             c.lsad_type
         from rejoined.all a
-            left join public.bottlenecks b
+            left join public.bottlenecksvehvoldelay b
                 on st_within(b.geom, st_buffer(a.geom, 10))
             left join public.uza c 
                 on st_within(a.geom, c.geom));
@@ -32,6 +33,7 @@ def megajoin():
 def create_point_cols():
     deficiencies = [
         "vulusercrrate",
+        "vc",
         "ksicrrate",
         "crrate",
         "sidewalk",
@@ -40,6 +42,7 @@ def create_point_cols():
         "tti",
         "pti",
         "bottleneck",
+        "vehvoldelay",
     ]
     col_names = []
     for value in deficiencies:
@@ -75,7 +78,7 @@ def assign_points(table: str, point_col: str, point: int, where_statement: str):
 def total_points(table: str):
     query = f"""
     alter table point_assignment.{table} add column if not exists total int;
-    UPDATE point_assignment.{table} set total = vulusercrrate_pts + ksicrrate_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + tti_pts + pti_pts + bottleneck_pts + transit_rt_pts;
+    UPDATE point_assignment.{table} set total = vulusercrrate_pts + vc_pts + ksicrrate_pts + crrate_pts + sidewalk_pts + missing_bike_fac_pts + tti_pts + pti_pts + bottleneck_pts + transit_rt_pts + vehvoldelay_pts;
     """
     db.execute(query)
 
@@ -212,6 +215,17 @@ def assign_scenario_b1(table: str):
     total_points(table)
 
 
+def assign_scenario_b2(table):
+    assign_scenario_a(table) 
+    db.execute(f"update point_assignment.{table} set tti_pts = 0, pti_pts = 0, bottleneck_pts = 0")
+    assign_points(table, "vehvoldelay_pts", 1, "ampmvoldel >= 10857" )
+    assign_points(table, "vc_pts", 1, "(pmvc100 >= 100 or amvc100 >=100) and lsad_type = 'Urbanized Area'")
+    assign_points(table, "vc_pts", 2, "(pmvc100 >= 150 or amvc100 >=150) and lsad_type = 'Urbanized Area'")
+    assign_points(table, "vc_pts", 1, "(pmvc100 >= 100 or amvc100 >=100) and lsad_type is null")
+    assign_points(table, "vc_pts", 2, "(pmvc100 >= 125 or amvc100 >=125) and lsad_type is null")
+    assign_points(table, "bottleneck_pts", 1, "ampmvoldel between 15309 and 34138")
+    assign_points(table, "bottleneck_pts", 2, "ampmvoldel >= 34138")
+
 def assign_scenario_c(table: str):
     """Assigns points for SC.
 
@@ -326,5 +340,6 @@ if __name__ == "__main__":
     copy_megajoin(scenarios)
     assign_scenario_a("scenario_a")
     assign_scenario_b1("scenario_b1")
+    assign_scenario_b2("scenario_b2")
     assign_scenario_c("scenario_c")
     assign_scenario_matts("scenario_matts")
