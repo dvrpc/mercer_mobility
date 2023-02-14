@@ -56,9 +56,10 @@ def create_point_cols():
 
 def copy_megajoin(scenarios: list):
     for scenario in scenarios:
-        query = f"""drop table if exists point_assignment.scenario_{scenario};
+        query = f"""
+        drop table if exists point_assignment.scenario_{scenario};
         create table point_assignment.scenario_{scenario} as(
-        select * from point_assignment.megajoin
+        select a.*, st_within(a.geom, b.geom) as high_priority from point_assignment.megajoin a, public.high_priority b
         )"""
         db.execute(query)
         print(f"setting up scenario {scenario}")
@@ -212,8 +213,82 @@ def assign_scenario_b1(table: str):
 
 
 def assign_scenario_c(table: str):
-    pass
+    """Assigns points for SC. 
 
+    Scenario C is pretty different than A; copying A and tweaking would've resulted in some errors (e.g., places where 2 points were assigned that weren't 
+    high priority would still show up as 2 points) so each column is verbosely rewritten here. Might be a better way to DRY here.
+    """
+
+    vcr = avg_and_sd("vulcrrate", table)
+    ksicr = avg_and_sd("ksicrrate", table)
+    cr = avg_and_sd("crrate", table)
+    assign_points(
+        table,
+        "vulusercrrate_pts",
+        1,
+        f"vulcrrate between {vcr[0] + .5*vcr[1]} and {vcr[0] + 1.5 * vcr[1]};",
+    )
+    assign_points(
+        table, "vulusercrrate_pts", 2, f"(vulcrrate > {vcr[0] + 1.5 * vcr[1]}) and high_priority = true;"
+    )
+    assign_points(
+        table,
+        "ksicrrate_pts",
+        1,
+        f"ksicrrate between {ksicr[0] + .5*ksicr[1]} and {ksicr[0] + 1.5 * ksicr[1]};",
+    )
+    assign_points(
+        table, "ksicrrate_pts", 2, f"(ksicrrate > {ksicr[0] + 1.5 * ksicr[1]}) and high_priority = true;"
+    )
+    assign_points(
+        table,
+        "crrate_pts",
+        1,
+        f"crrate between {cr[0] + .5*cr[1]} and {cr[0] + 1.5 * cr[1]};",
+    )
+    assign_points(table, "crrate_pts", 2, f"(crrate > ({cr[0] + 1.5 * cr[1]})) and high_priority = true;")
+    assign_points(
+        table,
+        "sidewalk_pts",
+        1,
+        "sw_ratio between 0 and .5 and high_priority = false;",
+    )
+    assign_points(
+        table, "sidewalk_pts", 2, "sw_ratio < .01 and high_priority = true;"
+    )
+    assign_points(table, "missing_bike_fac_pts", 1, "bikefacili = 'No Accomodation' and high_priority = false")
+    assign_points(table, "missing_bike_fac_pts", 2, "bikefacili = 'No Accomodation' and high_priority = true;")
+    assign_points(
+        table,
+        "tti_pts",
+        1,
+        "(ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5) and high_priority = false;",
+    )
+    assign_points(
+        table,
+        "tti_pts",
+        2,
+        "(ttiwkd0708 >= 1.5 or ttiwkd0809 >=1.5 or ttiwkd1617 >=1.5 or ttiwkd1718 >= 1.5) and high_priority = true;",
+    )
+
+    assign_points(
+        table,
+        "pti_pts",
+        1,
+        "(ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3) and high_priority = false;",
+    )
+    assign_points(
+        table,
+        "pti_pts",
+        2,
+        "(ptiwkd0708 >= 3 or ptiwkd0809 >=3 or ptiwkd1617 >=3 or ptiwkd1718 >=3) and high_priority = true;",
+    )
+
+    assign_points(table, "bottleneck_pts", 1, "inrixxd=0 and high_priority = false;")
+    assign_points(table, "bottleneck_pts", 2, "inrixxd=0 and high_priority = true;")
+    assign_points(table, "transit_rt_pts", 1, "(busfreq >=3 or busfreq2 >=3) and high_priority = false;")
+    assign_points(table, "transit_rt_pts", 2, "(busfreq >=3 or busfreq2 >=3) and high_priority = true")
+    total_points(table)
 
 if __name__ == "__main__":
     megajoin()
@@ -221,5 +296,6 @@ if __name__ == "__main__":
     copy_megajoin(scenarios)
     assign_scenario_a("scenario_a")
     assign_scenario_b1("scenario_b1")
+    assign_scenario_c("scenario_c")
     assign_scenario_matts("scenario_matts")
-    print(assign_scenario_c("scenario_c"))
+    
