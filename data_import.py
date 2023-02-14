@@ -144,16 +144,20 @@ def create_high_priority_geometry():
         on concat(a.state, a.county, a.tract) = b.geoid 
         left join job_density c 
         on st_within(b.geom, c.geom);
-    drop table if exists above_sds;
+    drop table if exists above_sds CASCADE;
     create table above_sds as
-    select * from density
-    where pop_density > (select stddev(pop_density) + avg(pop_density) from density)
-    or zero_car_density > (select stddev(zero_car_density) + avg(zero_car_density) from density)
-    or disability_density > (select stddev(disability_density) + avg(disability_density) from density)
-    or youth_density > (select stddev(youth_density) + avg(youth_density) from density)
-    or older_adults_density > (select stddev(older_adults_density) + avg(older_adults_density) from density)
-    or pop_density > (select stddev(pop_density) + avg(pop_density) from density)
-    or low_income_density > (select stddev(low_income_density) + avg(low_income_density) from density);
+    select 
+        st_union(geom) as geom
+    from density
+        where pop_density > (select stddev(pop_density) + avg(pop_density) from density)
+        or zero_car_density > (select stddev(zero_car_density) + avg(zero_car_density) from density)
+        or disability_density > (select stddev(disability_density) + avg(disability_density) from density)
+        or youth_density > (select stddev(youth_density) + avg(youth_density) from density)
+        or older_adults_density > (select stddev(older_adults_density) + avg(older_adults_density) from density)
+        or low_income_density > (select stddev(low_income_density) + avg(low_income_density) from density)
+        or ethnic_minority_density > (select stddev(ethnic_minority_density) + avg(ethnic_minority_density) from density)
+        or racial_minority_density > (select stddev(racial_minority_density) + avg(racial_minority_density) from density)
+        or job_density > (select stddev(job_density) + avg(job_density) from density);
     create or replace view density_simp as 
         select st_union(st_buffer(a.geom, 402)) as geom from above_sds a;
     create or replace view bus_buffers as 
