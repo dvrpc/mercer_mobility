@@ -13,7 +13,6 @@ load_dotenv()
 api_key = os.getenv("api_key")  # census api key
 db = Database.from_config("mercer", "omad")
 gis_db = Database.from_config("gis", "gis")
-conflate_db = Database.from_config("conflate", "conflate")
 data_folder = Path(os.getenv("data_root"))  # path to g drive folder'
 
 # this should be whatever you'd like to clip to. extended mercer's boundaries by 10 meters to account for two county line roads
