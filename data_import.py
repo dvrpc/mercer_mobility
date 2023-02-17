@@ -254,10 +254,10 @@ if __name__ == "__main__":
         "lts_deficient_facils",
     )
     import_and_clip(
-        "select * from boundaries.urbanareas_nj",
+        "select st_union(shape) as shape, lsad_type from boundaries.urbanareas_nj group by lsad_type",
         "shape",
         "uza",
-        explode=True,
+        explode=False,
     )
     import_and_clip(
         "select * from demographics.census_tracts_2020", "shape", "census_tracts_2020"
