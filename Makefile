@@ -14,8 +14,8 @@ conflate:
 	python assign_pts.py
 
 export_geojson:
-	@echo "exporting geojson"
-	python pull_geojson.py
+	@echo "exporting geojsons for each scenario"
+	python pull_geojsons.py
 
 all: setup dataimport conflate export_geojson 
 	@echo "running all necessary scripts"
