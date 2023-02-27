@@ -18,7 +18,7 @@ def megajoin():
         select 
             a.*, 
             b.inrixxd, 
-            b.ampmvoldel as bottleneckdelay,
+            b.ampmdelay as bottleneckvehdelay,
             c.lsad_type
         from rejoined.all a
             left join public.bottlenecksvehvoldelay b
@@ -223,8 +223,8 @@ def assign_scenario_b2(table):
     assign_points(table, "vc_pts", 2, "(pmvc100 >= 150 or amvc100 >=150) and lsad_type = 'Urbanized Area'")
     assign_points(table, "vc_pts", 1, "(pmvc100 >= 100 or amvc100 >=100) and lsad_type is null")
     assign_points(table, "vc_pts", 2, "(pmvc100 >= 125 or amvc100 >=125) and lsad_type is null")
-    assign_points(table, "bottleneck_pts", 1, "ampmvoldel between 15309 and 34138")
-    assign_points(table, "bottleneck_pts", 2, "ampmvoldel >= 34138")
+    assign_points(table, "bottleneck_pts", 1, "bottleneckvehdelay between 15309 and 34138")
+    assign_points(table, "bottleneck_pts", 2, "bottleneckvehdelay >= 34138")
     total_points(table)
 
 def assign_scenario_c(table: str):
