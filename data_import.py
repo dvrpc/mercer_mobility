@@ -5,7 +5,7 @@ import geopandas as gpd
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-from planbelt.plan_belt.census import census_pull
+from plan_belt.census import census_pull
 import pandas as pd
 
 load_dotenv()

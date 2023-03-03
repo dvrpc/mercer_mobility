@@ -14,6 +14,8 @@ You'll also need a pg-data-etl config file unless you want to refactor to use yo
 conda environment can be created by typing the following into a terminal. if the conda solve is taking a while, try mamba instead.
 `conda env create -f environment.yml`
 
+for now, i'm using a local package called planbelt. you'll have to copy or symlink it into your python env's site packages for now, repo is [here](https://github.com/mmorley0395/plan-belt). i'll get it onto pip eventually
+
 ## analysis runs
 
 follow the commands in the makefile, in order, or type `make all` to run everything in order.
