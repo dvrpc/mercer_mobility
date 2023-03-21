@@ -97,10 +97,10 @@ def create_high_priority_geometry():
     for key in census_tables:
         table_type = ""
         if key[0] == "B":
-            table_type = ""
+            table_type = "detailed"
         if key[0] == "S":
-            table_type = "/subject"
-        temp_table = census_pull.CensusTable(
+            table_type = "subject"
+        temp_table = census_pull.acsTable(
             "2021", "acs", "acs5", key, "34", "021", api_key, "*", table_type
         )
         column_header = census_tables[key]
@@ -144,8 +144,8 @@ def create_high_priority_geometry():
         on concat(a.state, a.county, a.tract) = b.geoid 
         left join job_density c 
         on st_within(b.geom, c.geom);
-    drop table if exists above_sds CASCADE;
-    create table above_sds as
+    drop table if exists high_priority CASCADE;
+    create table high_priority as
     select 
         st_union(geom) as geom
     from density
@@ -157,27 +157,7 @@ def create_high_priority_geometry():
         or low_income_density > (select stddev(low_income_density) + avg(low_income_density) from density)
         or ethnic_minority_density > (select stddev(ethnic_minority_density) + avg(ethnic_minority_density) from density)
         or racial_minority_density > (select stddev(racial_minority_density) + avg(racial_minority_density) from density)
-        or job_density > (select stddev(job_density) + avg(job_density) from density);
-    create or replace view density_simp as 
-        select st_union(st_buffer(a.geom, 402)) as geom from above_sds a;
-    create or replace view bus_buffers as 
-        select st_union(st_buffer(a.geom, 402)) as geom from transit_stops_clipped a;
-    create or replace view rail_buffers as 
-        select st_union(st_buffer(b.geom, 1608)) as geom  from passengerrailstations b;
-    create or replace view essentialbuffers as 
-        select st_union(st_buffer(a.geom, 402)) as geom  from essentialservices a;
-    create or replace view recreationbuffer as
-        select st_union(st_buffer(a.geom, 402)) as geom  from dvrpclu2015 a
-        where a.lu15catn = 'Recreation';
-    drop table if exists high_priority;
-    create table high_priority as	
-    SELECT ST_Union( 
-    ARRAY[ 
-        (SELECT geom FROM density_simp), 
-        (SELECT geom FROM bus_buffers), 
-       (SELECT geom FROM rail_buffers), 
-       (SELECT geom FROM essentialbuffers), 
-        (SELECT geom FROM recreationbuffer )]) as geom; 
+        or job_density > (select stddev(job_density) + avg(job_density) from density); 
     """
     db.execute(query)
 
@@ -195,53 +175,12 @@ if __name__ == "__main__":
         "sidewalk_gaps_clipped",
     )
     import_and_clip(
-        "select * from transportation.njtransit_transitstops",
-        "shape",
-        "transit_stops_clipped",
-    )
-    import_and_clip(
-        "select * from transportation.cmp2019_inrix_traveltimedata",
-        "shape",
-        "inrix_2019_clipped",
-    )
-    import_and_clip(
-        "select * from transportation.cmp2019_nj_crashfrequencyseverity",
-        "shape",
-        "cmp_crashfreqseverity_2019_clipped",
-    )
-    import_and_clip(
         "select * from transportation.cmp2019_focus_intersection_bottlenecks",
         "shape",
         "cmp_focus_bottleneck_2019_clipped",
     )
-    import_and_clip("select * from demographics.ipd_2020", "shape", "ipd_2020_clipped")
-    import_and_clip(
-        "select * from transportation.pedestriannetwork_points where status = 'MISSING'",
-        "shape",
-        "missing_curb_ramps",
-    )
     import_and_clip(
         "select * from transportation.pedestriannetwork_lines", "shape", "ped_network"
-    )
-    import_and_clip(
-        "select * from transportation.circuittrails", "shape", "circuit_trails"
-    )
-    import_and_clip(
-        "select objectid, verif_by, verif_on, multi_use, surface, comments_dvrpc, county, name, verif_status, owner, ST_Force2D(shape) as shape, miles from transportation.all_trails",
-        "shape",
-        "all_trails",
-    )
-    import_and_clip(
-        "select lu15cat, lu15catn, acres, lu15dev, mixeduse, st_force2d(shape) as shape from planning.dvrpc_landuse_2015",
-        "shape",
-        "dvrpclu2015",
-        explode=False,
-    )
-    import_and_clip(
-        "select * from demographics.forecast_2015to2050_taz",
-        "shape",
-        "dem_emp_forecast_2015",
-        explode=False,
     )
     import_and_clip(
         "select * from transportation.njtransit_transitroutes",
@@ -249,15 +188,9 @@ if __name__ == "__main__":
         "nj_transit_routes",
     )
     import_and_clip(
-        "select * from transportation.lts_network where bikefacili = 'No Accomodation' or bikefacili ='Sharrows' ",
+        "select * from transportation.lts_network",
         "shape",
-        "lts_deficient_facils",
-    )
-    import_and_clip(
-        "select st_union(shape) as shape, lsad_type from boundaries.urbanareas_nj group by lsad_type",
-        "shape",
-        "uza",
-        explode=False,
+        "lts",
     )
     import_and_clip(
         "select * from demographics.census_tracts_2020", "shape", "census_tracts_2020"
@@ -274,14 +207,11 @@ if __name__ == "__main__":
         "select * from planning.eta_essentialservicespts", "shape", "essentialservices"
     )
     # generic shapefile imports
-    import_shapefile("ModelVolumes", "model_vols")
     import_shapefile("JobAccess", clip=False)
-    import_shapefile("NJDOT2021_ADT")
-    import_shapefile("TravelTimes")
     import_shapefile("MercerCountyRoads")
     import_shapefile("MercerBikeFacilities")
     import_shapefile("CrashSegment")
     import_shapefile("Bottlenecks")
-    import_shapefile("vehvoldelay")# this is a shapefile that tom made
+    import_shapefile("vehvoldelay")  # this is a shapefile that tom made
     import_shapefile("TransitFreq")
     create_high_priority_geometry()
