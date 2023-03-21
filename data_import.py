@@ -175,11 +175,6 @@ if __name__ == "__main__":
         "sidewalk_gaps_clipped",
     )
     import_and_clip(
-        "select * from transportation.cmp2019_focus_intersection_bottlenecks",
-        "shape",
-        "cmp_focus_bottleneck_2019_clipped",
-    )
-    import_and_clip(
         "select * from transportation.pedestriannetwork_lines", "shape", "ped_network"
     )
     import_and_clip(
