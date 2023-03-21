@@ -194,79 +194,34 @@ def rejoiner():
             a."index", 
             a.sri, 
             a.geom, 
-            b."volcapra~2" as amvc100, 
-            c."volcapra~2" as amvc85, 
-            d.crrate, 
-            d.ksicrrate,
-            d.vulcrrate,
-            e.bikefacili, 
-            f."type" as countyrd, 
-            g.line, 
-            h."volcapra~2" as pmvc100,
-            i."volcapra~2" as pmvc85,
-            j.ptiwkd0708,
-            j.ptiwkd0809,
-            j.ptiwkd1617,
-            j.ptiwkd1718,
-            k.ttiwkd0708,
-            k.ttiwkd0809,
-            k.ttiwkd1617,
-            k.ttiwkd1718,
-            l.sw_ratio,
-            m."countact~2" as busfreq,
-            m."r_counta~5" as busfreq2,
-            n.ampmvoldel
+            b.crrate, 
+            b.ksicrrate,
+            b.vulcrrate,
+            c.bikefacili, 
+            d."type" as countyrd, 
+            e.line, 
+            f.sw_ratio,
+            g."countact~2" as busfreq,
+            g."r_counta~5" as busfreq2
         from public.nj_centerline a
-        left join rejoined.amvc100 b 
+        left join rejoined.crash_seg b
             on b."index" = a."index" 
-        left join rejoined.amvc85 c 
+        left join rejoined.lts_ c 
             on c."index" = a."index" 
-        left join rejoined.crash_seg d
+        left join rejoined.mercer_roads d
             on d."index" = a."index" 
-        left join rejoined.lts_no_facils e 
+        left join rejoined.njt e
             on e."index" = a."index" 
-        left join rejoined.mercer_roads f
+        left join rejoined.sidewalk_gaps f 
             on f."index" = a."index" 
-        left join rejoined.njt g
-            on g."index" = a."index" 
-        left join rejoined.pmvc100 h 
-            on h."index" = a."index" 
-        left join rejoined.pmvc85 i 
-            on i."index" = a."index" 
-        left join rejoined.pti j 
-            on j."index" = a."index" 
-        left join rejoined.tti k 
-            on k."index" = a."index" 
-        left join rejoined.sidewalk_gaps l 
-            on l."index" = a."index" 
-        left join rejoined.bus_freq m 
-            on m."index" = a."index"
-        left join rejoined.vehvoldelaymercer n
-            on n."index" = a."index"
+        left join rejoined.bus_freq g 
+            on g."index" = a."index"
     """
     db.execute(query)
 
 
 if __name__ == "__main__":
     conflation_schema()
-
-    # model outputs, possible coverage >= 70
-    conflator("view_am_vc100", "amvc100", "uid", "nj_centerline", 'b."volcapra~2"')
-    conflator("view_pm_vc100", "pmvc100", "uid", "nj_centerline", 'b."volcapra~2"')
-    conflator("view_am_vc85", "amvc85", "uid", "nj_centerline", 'b."volcapra~2"')
-    conflator("view_pm_vc85", "pmvc85", "uid", "nj_centerline", 'b."volcapra~2"')
-
-    # pti/tti, possible coverage >= 80
-    for i in ["tti", "pti"]:
-        conflator(
-            f"view_{i}_all",
-            f"{i}",
-            "uid",
-            "nj_centerline",
-            "b.ttiwkd0708,b.ttiwkd0809,b.ttiwkd1617,b.ttiwkd1718, b.ptiwkd0708,b.ptiwkd0809, b.ptiwkd1617,b.ptiwkd1718",
-            10,
-            80,
-        )
 
     # nj_transit routes, possible coverage >=80
     conflator("nj_transit_routes", "njt", "uid", "nj_centerline", "b.line", 8, 80)
@@ -304,10 +259,10 @@ if __name__ == "__main__":
         75,
     )
 
-    # bike facilities (layer tbd)
+    # bike facilities
     conflator(
-        "lts_deficient_facils",
-        "lts_no_facils",
+        "lts",
+        "lts_",
         "uid",
         "nj_centerline",
         "b.bikefacili",
@@ -323,6 +278,8 @@ if __name__ == "__main__":
         5,
         75,
     )
-    conflator("v4vehdelmercer", "vehvoldelaymercer", "uid", "nj_centerline", "b.ampmvoldel")
+    conflator(
+        "v4vehdelmercer", "vehvoldelaymercer", "uid", "nj_centerline", "b.ampmvoldel"
+    )
 
     rejoiner()
