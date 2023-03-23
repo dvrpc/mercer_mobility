@@ -7,8 +7,9 @@ api_key = os.getenv("api_key")
 
 db = Database.from_config("mercer", "omad")
 
+
 def rank_crashes():
-    rates = ['crrate', 'ksicrrate', 'vulcrrate']
+    rates = ["crrate", "ksicrrate", "vulcrrate"]
     for rate in rates:
         query = f"""
             alter table rejoined.all add column if not exists {rate}_pts int;
@@ -41,6 +42,6 @@ def rank_crashes():
 
     db.execute(query)
 
-    
+
 if __name__ == "__main__":
     rank_crashes()
