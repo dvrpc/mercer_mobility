@@ -202,7 +202,9 @@ def rejoiner():
             e.line, 
             f.sw_ratio,
             g."countact~2" as busfreq,
-            g."r_counta~5" as busfreq2
+            g."r_counta~5" as busfreq2,
+            h.rankvehdel,
+            h.rankvoldel
         from public.nj_centerline a
         left join rejoined.crash_seg b
             on b."index" = a."index" 
@@ -216,6 +218,8 @@ def rejoiner():
             on f."index" = a."index" 
         left join rejoined.bus_freq g 
             on g."index" = a."index"
+        left join rejoined.bottlenecks h 
+            on h."index" = a."index"
     """
     db.execute(query)
 
@@ -278,8 +282,13 @@ if __name__ == "__main__":
         5,
         75,
     )
+
     conflator(
-        "v4vehdelmercer", "vehvoldelaymercer", "uid", "nj_centerline", "b.ampmvoldel"
+        "bottlenecks_joined",
+        "bottlenecks",
+        "uid",
+        "nj_centerline",
+        "b.cnbtv3 as bneck_id, b.roadname, b.rankvehdel, b.rankvoldel",
     )
 
     rejoiner()
