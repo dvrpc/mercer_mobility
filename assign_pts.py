@@ -9,6 +9,9 @@ db = Database.from_config("mercer", "omad")
 
 
 def rank_crashes():
+    """Rank segments by different types of crash rates into 5 bins,
+    from bottom 20% to top 20%"""
+
     rates = ["crrate", "ksicrrate", "vulcrrate"]
     for rate in rates:
         query = f"""
@@ -43,5 +46,22 @@ def rank_crashes():
     db.execute(query)
 
 
+def high_priority():
+    query = """
+    alter table rejoined.all add column if not exists high_density_equity bool;
+
+    update rejoined.all
+    set high_density_equity = 'True' 
+    from high_priority
+    where st_within(rejoined.all.geom, high_priority.geom);
+
+    update rejoined.all
+    set high_density_equity = 'False'
+    where high_density_equity is null
+    """
+    db.execute(query)
+
+
 if __name__ == "__main__":
     rank_crashes()
+    high_priority()
