@@ -57,11 +57,33 @@ def high_priority():
 
     update rejoined.all
     set high_density_equity = 'False'
-    where high_density_equity is null
+    where high_density_equity is null;
     """
+    db.execute(query)
+
+
+def overlap():
+    """Checks for overlap in highest scoring congestion segments and highest scoring crash segments.
+
+    Congestion is easy because they're ranked, crashes use the crash_pt_totals column
+    and only greater than 9 (which is the start of the top 20% of a max of 11 pts)"""
+
+    query = """
+    alter table rejoined.all add column if not exists crash_congestion_overlap bool;
+
+    update rejoined.all
+    set crash_congestion_overlap = 'True'
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals >= 9);
+
+    update rejoined.all
+    set crash_congestion_overlap = 'False'
+    where crash_congestion_overlap is null;
+    """
+
     db.execute(query)
 
 
 if __name__ == "__main__":
     rank_crashes()
     high_priority()
+    overlap()
