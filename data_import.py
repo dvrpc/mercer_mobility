@@ -162,6 +162,17 @@ def create_high_priority_geometry():
     db.execute(query)
 
 
+def join_bottlenecks():
+    query = """
+    create or replace view bottlenecks_joined as 
+        select b.*, a.rankvehdel, a.rankvoldel from bottleneckpointlocatons a
+        inner join mercer_bottlenecksegments b 
+        on a.myid = b.cnbtv3 
+    """
+    db.execute(query)
+    print("Joined bottleneck points to segments, see views.")
+
+
 if __name__ == "__main__":
     import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
     import_and_clip(
@@ -207,6 +218,6 @@ if __name__ == "__main__":
     import_shapefile("MercerBikeFacilities")
     import_shapefile("CrashSegment")
     import_shapefile("Bottlenecks")
-    import_shapefile("vehvoldelay")  # this is a shapefile that tom made
     import_shapefile("TransitFreq")
     create_high_priority_geometry()
+    join_bottlenecks()
