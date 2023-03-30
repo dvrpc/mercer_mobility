@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
     # bike facilities
     conflator(
-        "lts",
+        "lts_joined",
         "lts_",
         "uid",
         "nj_centerline",

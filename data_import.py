@@ -162,6 +162,27 @@ def create_high_priority_geometry():
     db.execute(query)
 
 
+def join_lts_to_seanedits():
+    """
+    Function to join the LTS network to a shapefile from Sean containing some newer
+    bike facility edits.
+    """
+    query = """
+    update bikefacilityedits
+        set uid = uid + (select max(uid) from lts)
+        where uid is not null;
+    alter table bikefacilityedits 
+        rename column facilityty to bikefacili;
+    drop table if exists lts_joined;
+    create table lts_joined as
+        select a.geom, a.bikefacili, a.uid from lts a
+        union  
+        select b.geom, b.bikefacili, b.uid from bikefacilityedits b; 
+    """
+
+    db.execute(query)
+
+
 if __name__ == "__main__":
     import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
     import_and_clip(
@@ -204,8 +225,11 @@ if __name__ == "__main__":
     # generic shapefile imports
     import_shapefile("JobAccess", clip=False)
     import_shapefile("MercerCountyRoads")
-    import_shapefile("MercerBikeFacilities")
+    import_shapefile("SeanBikeEdits")
     import_shapefile("CrashSegment")
     import_shapefile("Bottlenecks")
     import_shapefile("TransitFreq")
+
+    # create other necessary layers
     create_high_priority_geometry()
+    join_lts_to_seanedits()
