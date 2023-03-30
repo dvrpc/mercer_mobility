@@ -178,6 +178,9 @@ def join_lts_to_seanedits():
         select a.geom, a.bikefacili, a.uid from lts a
         union  
         select b.geom, b.bikefacili, b.uid from bikefacilityedits b; 
+    update lts_joined
+        set bikefacili = 'Bike Lane'
+        where bikefacili = 'Bicycle Lane';
     """
 
     db.execute(query)
