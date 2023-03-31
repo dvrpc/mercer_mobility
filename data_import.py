@@ -144,22 +144,36 @@ def create_high_priority_geometry():
         on concat(a.state, a.county, a.tract) = b.geoid 
         left join job_density c 
         on st_within(b.geom, c.geom);
-    drop table if exists high_priority CASCADE;
-    create table high_priority as
-    select 
-        st_union(geom) as geom
-    from density
-        where pop_density > (select stddev(pop_density) + avg(pop_density) from density)
-        or zero_car_density > (select stddev(zero_car_density) + avg(zero_car_density) from density)
-        or disability_density > (select stddev(disability_density) + avg(disability_density) from density)
-        or youth_density > (select stddev(youth_density) + avg(youth_density) from density)
-        or older_adults_density > (select stddev(older_adults_density) + avg(older_adults_density) from density)
-        or low_income_density > (select stddev(low_income_density) + avg(low_income_density) from density)
-        or ethnic_minority_density > (select stddev(ethnic_minority_density) + avg(ethnic_minority_density) from density)
-        or racial_minority_density > (select stddev(racial_minority_density) + avg(racial_minority_density) from density)
-        or job_density > (select stddev(job_density) + avg(job_density) from density); 
     """
     db.execute(query)
+
+    sds = [1, 2, 4]
+    for sd in sds:
+        query2 = f"""
+        drop table if exists high_priority_sd_div_{sd} CASCADE;
+        create table high_priority_sd_div_{sd} as
+        select 
+            st_union(geom) as geom, 1/{sd}::float as sd_above_mean
+        from density
+            where pop_density > (select (stddev(pop_density)/{sd}) + avg(pop_density) from density)
+            or zero_car_density > (select (stddev(zero_car_density)/{sd}) + avg(zero_car_density) from density)
+            or disability_density > (select (stddev(disability_density)/{sd}) + avg(disability_density) from density)
+            or youth_density > (select (stddev(youth_density)/{sd}) + avg(youth_density) from density)
+            or older_adults_density > (select (stddev(older_adults_density)/{sd}) + avg(older_adults_density) from density)
+            or low_income_density > (select (stddev(low_income_density)/{sd}) + avg(low_income_density) from density)
+            or ethnic_minority_density > (select (stddev(ethnic_minority_density)/{sd}) + avg(ethnic_minority_density) from density)
+            or racial_minority_density > (select (stddev(racial_minority_density)/{sd}) + avg(racial_minority_density) from density)
+            or job_density > (select (stddev(job_density)/{sd}) + avg(job_density) from density); 
+        drop table if exists high_priority;
+        create table high_priority as 
+            select * from high_priority_sd_div_1 
+            union 
+            select * from high_priority_sd_div_2
+            union
+            select * from  high_priority_sd_div_4;
+            """
+
+        db.execute(query2)
 
 
 def join_lts_to_seanedits():
@@ -187,52 +201,52 @@ def join_lts_to_seanedits():
 
 
 if __name__ == "__main__":
-    import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
-    import_and_clip(
-        "select * from transportation.nj_centerline",
-        "shape",
-        "nj_centerline",
-    )
-    import_and_clip(
-        "select * from transportation.pedestriannetwork_gaps",
-        "shape",
-        "sidewalk_gaps_clipped",
-    )
-    import_and_clip(
-        "select * from transportation.pedestriannetwork_lines", "shape", "ped_network"
-    )
-    import_and_clip(
-        "select * from transportation.njtransit_transitroutes",
-        "shape",
-        "nj_transit_routes",
-    )
-    import_and_clip(
-        "select * from transportation.lts_network",
-        "shape",
-        "lts",
-    )
-    import_and_clip(
-        "select * from demographics.census_tracts_2020", "shape", "census_tracts_2020"
-    )
-    import_and_clip(
-        "select * from economy.nets_2015 where coname = 'Mercer'", "shape", "nets_2015"
-    )
-    import_and_clip(
-        "select * from transportation.passengerrailstations",
-        "shape",
-        "passengerrailstations",
-    )
-    import_and_clip(
-        "select * from planning.eta_essentialservicespts", "shape", "essentialservices"
-    )
-    # generic shapefile imports
-    import_shapefile("JobAccess", clip=False)
-    import_shapefile("MercerCountyRoads")
-    import_shapefile("SeanBikeEdits")
-    import_shapefile("CrashSegment")
-    import_shapefile("Bottlenecks")
-    import_shapefile("TransitFreq")
+    # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
+    # import_and_clip(
+    #     "select * from transportation.nj_centerline",
+    #     "shape",
+    #     "nj_centerline",
+    # )
+    # import_and_clip(
+    #     "select * from transportation.pedestriannetwork_gaps",
+    #     "shape",
+    #     "sidewalk_gaps_clipped",
+    # )
+    # import_and_clip(
+    #     "select * from transportation.pedestriannetwork_lines", "shape", "ped_network"
+    # )
+    # import_and_clip(
+    #     "select * from transportation.njtransit_transitroutes",
+    #     "shape",
+    #     "nj_transit_routes",
+    # )
+    # import_and_clip(
+    #     "select * from transportation.lts_network",
+    #     "shape",
+    #     "lts",
+    # )
+    # import_and_clip(
+    #     "select * from demographics.census_tracts_2020", "shape", "census_tracts_2020"
+    # )
+    # import_and_clip(
+    #     "select * from economy.nets_2015 where coname = 'Mercer'", "shape", "nets_2015"
+    # )
+    # import_and_clip(
+    #     "select * from transportation.passengerrailstations",
+    #     "shape",
+    #     "passengerrailstations",
+    # )
+    # import_and_clip(
+    #     "select * from planning.eta_essentialservicespts", "shape", "essentialservices"
+    # )
+    # # generic shapefile imports
+    # import_shapefile("JobAccess", clip=False)
+    # import_shapefile("MercerCountyRoads")
+    # import_shapefile("SeanBikeEdits")
+    # import_shapefile("CrashSegment")
+    # import_shapefile("Bottlenecks")
+    # import_shapefile("TransitFreq")
 
-    # create other necessary layers
+    # # create other necessary layers
     create_high_priority_geometry()
-    join_lts_to_seanedits()
+    # join_lts_to_seanedits()
