@@ -66,17 +66,17 @@ def overlap():
     """Checks for overlap in highest scoring congestion segments and highest scoring crash segments.
 
     Congestion is easy because they're ranked, crashes use the crash_pt_totals column
-    and only greater than 9 (which is the start of the top 20% of a max of 11 pts)"""
+    and only greater than 6 (which is the start of the top 40% of a max of 11 pts)"""
 
     query = """
-    alter table rejoined.all add column if not exists crash_congestion_overlap bool;
+    alter table rejoined.all add column if not exists crash_congestion_overlap float;
 
     update rejoined.all
-    set crash_congestion_overlap = 'True'
-    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals >= 9);
+    set crash_congestion_overlap = (crash_pt_totals/(rankvehdel + rankvoldel))
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals >= 6);
 
     update rejoined.all
-    set crash_congestion_overlap = 'False'
+    set crash_congestion_overlap = 0
     where crash_congestion_overlap is null;
     """
 
