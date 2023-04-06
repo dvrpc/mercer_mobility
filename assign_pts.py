@@ -65,19 +65,27 @@ def high_priority():
 def overlap():
     """Checks for overlap in highest scoring congestion segments and highest scoring crash segments.
 
-    Congestion is easy because they're ranked, crashes use the crash_pt_totals column
-    and only greater than 6 (which is the start of the top 40% of a max of 11 pts)"""
+    Breaks out overlap between top 20 bottlenecks and 5 buckets of crash point totals.
+    """
 
     query = """
-    alter table rejoined.all add column if not exists crash_congestion_overlap float;
+    alter table rejoined.all add column if not exists crash_congestion_overlap text;
 
     update rejoined.all
-    set crash_congestion_overlap = (crash_pt_totals/(rankvehdel + rankvoldel))
-    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals >= 6);
-
+    set crash_congestion_overlap = 'A'
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals >= 9);
     update rejoined.all
-    set crash_congestion_overlap = 0
-    where crash_congestion_overlap is null;
+    set crash_congestion_overlap = 'B'
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals between 7 and 9);
+    update rejoined.all
+    set crash_congestion_overlap = 'C'
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals between 5 and 7);
+    update rejoined.all
+    set crash_congestion_overlap = 'D'
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals between 4 and 5);
+    update rejoined.all
+    set crash_congestion_overlap = 'E'
+    where (rankvehdel <= 20 or rankvoldel <= 20) and (crash_pt_totals <= 3);
     """
 
     db.execute(query)
