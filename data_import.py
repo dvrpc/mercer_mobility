@@ -201,52 +201,52 @@ def join_lts_to_seanedits():
 
 
 if __name__ == "__main__":
-    # import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
-    # import_and_clip(
-    #     "select * from transportation.nj_centerline",
-    #     "shape",
-    #     "nj_centerline",
-    # )
-    # import_and_clip(
-    #     "select * from transportation.pedestriannetwork_gaps",
-    #     "shape",
-    #     "sidewalk_gaps_clipped",
-    # )
-    # import_and_clip(
-    #     "select * from transportation.pedestriannetwork_lines", "shape", "ped_network"
-    # )
-    # import_and_clip(
-    #     "select * from transportation.njtransit_transitroutes",
-    #     "shape",
-    #     "nj_transit_routes",
-    # )
-    # import_and_clip(
-    #     "select * from transportation.lts_network",
-    #     "shape",
-    #     "lts",
-    # )
-    # import_and_clip(
-    #     "select * from demographics.census_tracts_2020", "shape", "census_tracts_2020"
-    # )
-    # import_and_clip(
-    #     "select * from economy.nets_2015 where coname = 'Mercer'", "shape", "nets_2015"
-    # )
-    # import_and_clip(
-    #     "select * from transportation.passengerrailstations",
-    #     "shape",
-    #     "passengerrailstations",
-    # )
-    # import_and_clip(
-    #     "select * from planning.eta_essentialservicespts", "shape", "essentialservices"
-    # )
-    # # generic shapefile imports
-    # import_shapefile("JobAccess", clip=False)
-    # import_shapefile("MercerCountyRoads")
-    # import_shapefile("SeanBikeEdits")
-    # import_shapefile("CrashSegment")
-    # import_shapefile("Bottlenecks")
-    # import_shapefile("TransitFreq")
+    import_and_clip("select * from transportation.njdot_lrs", "shape", "lrs_clipped")
+    import_and_clip(
+        "select * from transportation.nj_centerline",
+        "shape",
+        "nj_centerline",
+    )
+    import_and_clip(
+        "select * from transportation.pedestriannetwork_gaps",
+        "shape",
+        "sidewalk_gaps_clipped",
+    )
+    import_and_clip(
+        "select * from transportation.pedestriannetwork_lines", "shape", "ped_network"
+    )
+    import_and_clip(
+        "select * from transportation.njtransit_transitroutes",
+        "shape",
+        "nj_transit_routes",
+    )
+    import_and_clip(
+        "select * from transportation.lts_network",
+        "shape",
+        "lts",
+    )
+    import_and_clip(
+        "select * from demographics.census_tracts_2020", "shape", "census_tracts_2020"
+    )
+    import_and_clip(
+        "select * from economy.nets_2015 where coname = 'Mercer'", "shape", "nets_2015"
+    )
+    import_and_clip(
+        "select * from transportation.passengerrailstations",
+        "shape",
+        "passengerrailstations",
+    )
+    import_and_clip(
+        "select * from planning.eta_essentialservicespts", "shape", "essentialservices"
+    )
+    # generic shapefile imports
+    import_shapefile("JobAccess", clip=False)
+    import_shapefile("MercerCountyRoads")
+    import_shapefile("SeanBikeEdits")
+    import_shapefile("CrashSegment")
+    import_shapefile("Bottlenecks")
+    import_shapefile("TransitFreq")
 
-    # # create other necessary layers
+    # create other necessary layers
     create_high_priority_geometry()
-    # join_lts_to_seanedits()
+    join_lts_to_seanedits()
